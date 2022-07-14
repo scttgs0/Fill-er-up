@@ -6,12 +6,30 @@
 ;======================================
 
                 .include "equates_system_atari8.asm"
+                .include "equates_system_c256.asm"
                 .include "equates_zeropage.asm"
                 .include "equates_game.asm"
 
-            .enc "atari-screen"
-                .cdef " Z",$00
-            .enc "none"
+                .include "macros_65816.asm"
+                .include "macros_frs_graphic.asm"
+                .include "macros_frs_mouse.asm"
+
+
+;--------------------------------------
+;--------------------------------------
+                * = START-40
+;--------------------------------------
+                .text "PGX"
+                .byte $01
+                .dword BOOT
+
+BOOT            clc
+                xce
+                .m8i8
+                .setdp $0000
+                .setbank $00
+
+                jmp START
 
 
 ;--------------------------------------
@@ -23,53 +41,63 @@
 ;--------------------------------------
 ; Start of Code
 ;--------------------------------------
-START           jsr $E465               ; INIT SOUNDS
+START           .frsGraphics mcGraphicsOn|mcSpriteOn,mcVideoMode320
+                .frsMouse_off
+                .frsBorder_off
 
-                lda #$11                ; P/M PRIORITY
+                jsr SIOINV              ; init sounds
+
+                lda #$11                ; P/M priority
                 sta PRIOR
-                lda #1                  ; DON'T SHOW
-                sta SHOOFF              ; PLAYER OR STAR
-                sta FILLON              ; WE STILL MUST
-                jsr PMCLR               ; CLEAR P/M AREA
 
-                lda #64                 ; AND SET UP THE
-                sta STRHGT              ; STAR'S HEIGHT
-                lda #128                ; AND
-                sta STRHOR              ; HORIZONTAL POSITION
-                lda #$D0                ; NOW LET'S
-                ldx #4                  ; ZERO OUT
-ZSCLP           sta SCOLIN+4,X          ; THE SCORE
-                sta SCOLIN+15,X         ; AREAS!
+                lda #1                  ; don't show player or star
+                sta SHOOFF              ; we still must clear P/M area
+                sta FILLON
+                jsr PMCLR
+
+                lda #64                 ; and set up the star's height and horizontal position
+                sta STRHGT
+                lda #128
+                sta STRHOR
+
+                lda #$D0                ; now let's zero out the score areas!
+                ldx #4
+ZSCLP           sta ScoreLine1+4,X
+                sta ScoreLine1+15,X
                 dex
                 bpl ZSCLP
 
                 ldx #5
-ZSCLP2          sta SCOLN2+12,X
+ZSCLP2          sta ScoreLine2+12,X
                 dex
                 bpl ZSCLP2
 
-                lda #0                  ; THESE ITEMS
-                sta FILLON              ; MUST BE SET
-                sta DEADFG              ; TO ZERO ON
-                sta NOCCHG              ; STARTUP OR
-                sta HITCLR              ; ELSE WE'LL
-                sta DMACTL              ; WIND UP WITH
-                sta NMIEN               ; NASTY THINGS
-                sta HASDRN              ; HAPPENING!
+                lda #0                  ; these items must be set to zero on startup or
+                sta FILLON              ; else we'll wind up with nasty things happening!
+                sta DEADFG
+                sta NOCCHG
+                sta HITCLR
+                sta DMACTL
+                sta NMIEN
+                sta HASDRN
                 sta AUDCTL
-                ldx #5                  ; LET'S ZERO
-CMSLP           sta SCORE,X             ; OUT THE SCORE
-                dex                     ; COUNTER...
+
+                ldx #5                  ; let's zero out the score counter...
+CMSLP           sta SCORE,X
+                dex
                 bpl CMSLP
 
-                sta LEVEL               ; AND LEVEL #!
-                lda #3                  ; WE START WITH
-                sta LIVES               ; 3 LIVES
-                ora #$90                ; AND PUT THEM IN
-                sta SCOLN2+19           ; THE SCORE LINE
-                lda #$0A                ; NEXT WE SET UP
-                sta COLPF0              ; THE COLORS WE
-                lda #$24                ; WANT TO USE.
+                sta LEVEL               ; and level #!
+
+                lda #3                  ; we start with 3 lives
+                sta LIVES
+
+                ora #$90                ; and put them in the score line
+                sta ScoreLine2+19
+
+                lda #$0A                ; next we set up the colors we want to use.
+                sta COLPF0
+                lda #$24
                 sta COLPF1
                 lda #$94
                 sta COLPF2
@@ -81,23 +109,30 @@ CMSLP           sta SCORE,X             ; OUT THE SCORE
                 sta COLPM3
                 lda #$34
                 sta COLPM0
-                lda #<DLIST          	; WE'D BETTER TELL
-                sta DLISTL              ; THE COMPUTER WHERE
-                lda #>DLIST          	; OUR DISPLAY LIST
-                sta DLISTL+1            ; IS LOCATED!
-                ldy #<INTRPT         	; TELL WHERE THE
-                ldx #>INTRPT         	; VERTICAL BLANK
-                lda #6                  ; INTERRUPT IS
-                jsr SETVBV              ; AND SET IT!
 
-                lda #>PMAREA         	; HERE'S OUR P/M
-                sta PMBASE              ; GRAPHICS AREA!
-                lda #$2E                ; TURN ON THE
-                sta DMACTL              ; DMA CONTROL
-                lda #$3                 ; AND
-                sta GRACTL              ; GRAPHICS CONTROL!
-                lda #$40                ; ENABLE VBI
+                lda #<DLIST          	; we'd better tell the computer where our display list is located!
+                sta DLISTL
+                lda #>DLIST
+                sta DLISTL+1
+
+                ldy #<INTRPT         	; tell where the vertical blank interrupt is
+                ldx #>INTRPT
+
+                lda #6
+                jsr SETVBV              ; and set it!
+
+                lda #>PMAREA         	; here's our P/M graphics area!
+                sta PMBASE
+
+                lda #$2E                ; turn on the DMA control
+                sta DMACTL
+
+                lda #$3                 ; ... and graphics control!
+                sta GRACTL
+
+                lda #$40                ; enable VBI
                 sta NMIEN
+
                 jmp CLRDSP
 
 
@@ -247,10 +282,10 @@ DRAWLN          jsr PLOTCL
 
                 lda DECIMAL+1           ; GET DECIMAL LEVEL #
                 ora #$90                ; ADD COLOR
-                sta SCOLN2+3            ; PUT IN SCORE LINE
+                sta ScoreLine2+3            ; PUT IN SCORE LINE
                 lda DECIMAL             ; SAME FOR 2ND
                 ora #$90                ; LEVEL #
-                sta SCOLN2+4            ; DIGIT
+                sta ScoreLine2+4            ; DIGIT
                 ldx LEVEL               ; GET THIS LEVEL'S
                 lda TGTLO,X             ; PARAMETERS
                 sta LOWK
@@ -505,7 +540,7 @@ ENDLIN          lda #0                  ; WE AREN'T
                 lda CURHI
                 sta HIWK
                 lda #15                 ; PUT AT 15TH
-                sta SLLOC               ; POS. IN SCOLIN
+                sta SLLOC               ; POS. IN ScoreLine1
                 jsr CNVDEC              ; CONVERT TO DECIMAL
 
                 lda #1                  ; NOW REDRAW THE
@@ -560,7 +595,7 @@ NXSPOS          iny
                 ldx #5                  ; NOW PLACE THE
 SHSLP           lda SCORE,X             ; SCORE IN
                 ora #$10                ; SCORE LINE #2
-                sta SCOLN2+12,X
+                sta ScoreLine2+12,X
                 dex
                 bpl SHSLP
 
@@ -610,13 +645,13 @@ DEADCC          lda DEDBRT              ; MOVE BRIGHTNESS
                 dec LIVES               ; 1 LESS LIFE
                 lda LIVES               ; GET # LIVES
                 ora #$90                ; ADD COLOR
-                sta SCOLN2+19           ; AND DISPLAY!
+                sta ScoreLine2+19           ; AND DISPLAY!
                 cmp #$90                ; ZERO LIVES?
                 bne NOTDED              ; NO!
 
-                lda #<GOMSG          	; WE'RE COMPLETELY
+                lda #<GameOver          	; WE'RE COMPLETELY
                 sta SCDL+1              ; DEAD, SHOW
-                lda #>GOMSG          	; 'GAME OVER'
+                lda #>GameOver          	; 'GAME OVER'
                 sta SCDL+2              ; MESSAGE
 CKSTRT          lda CONSOL              ; WAIT FOR START
                 and #1                  ; KEY...
@@ -626,9 +661,9 @@ RELEAS          lda CONSOL              ; KEY PRESSED, NOW
                 and #1                  ; WAIT FOR RELEASE!
                 beq RELEAS              ; NOT RELEASED YET!
 
-                lda #<SCOLIN         	; PUT SCORE
+                lda #<ScoreLine1         	; PUT SCORE
                 sta SCDL+1              ; LINE BACK
-                lda #>SCOLIN         	; IN DISPLAY
+                lda #>ScoreLine1         	; IN DISPLAY
                 sta SCDL+2              ; LIST...
                 jmp START               ; AND START GAME!
 
@@ -776,7 +811,7 @@ JRXLP           jmp REDXLP
 ;--------------------------------------
 ; Converts a 2-byte binary number to a
 ; 5-byte decimal number.  Will place
-; the decimal number in SCOLIN if
+; the decimal number in ScoreLine1 if
 ; desired (SLLOC determines position).
 ;======================================
 CNVDEC          ldx #4
@@ -819,7 +854,7 @@ SHOWIT          ldx #$4
 
 SHOLP           lda DECIMAL,X
                 ora #$D0
-                sta SCOLIN,Y
+                sta ScoreLine1,Y
                 iny
                 dex
                 bpl SHOLP
@@ -1524,17 +1559,15 @@ DLIST           .byte AEMPTY8,AEMPTY8,AEMPTY8
 
                 .byte AEMPTY3
 SCDL            .byte $06+ALMS
-                    .addr SCOLIN
+                    .addr ScoreLine1
                 .byte $06+ALMS
-                    .addr SCOLN2
+                    .addr ScoreLine2
                 .byte AVB+AJMP
                     .addr DLIST
 
-            .enc "atari-screen"
-SCOLIN          .text 'TGT:       CUR:     '
-SCOLN2          .text 'LV:   SCORE:        '
-GOMSG           .text '     GAME  OVER     '
-            .enc "none"
+ScoreLine1      .text 'TGT:       CUR:     '
+ScoreLine2      .text 'LV:   SCORE:        '
+GameOver        .text '     GAME  OVER     '
 
 ;
 ; LEVEL TABLES
@@ -1712,10 +1745,7 @@ LGTH            .fill 256
 
 
 ;--------------------------------------
-;--------------------------------------
-                * = $02E0
+                .align $100
 ;--------------------------------------
 
-                .addr START
-
-                .end
+                .include "FONT.asm"

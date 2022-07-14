@@ -49,3 +49,4 @@ NMIEN           = $D40E
 
 SETVBV          = $E45C
 XITVBV          = $E45F
+SIOINV          = $E465
