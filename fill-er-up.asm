@@ -5,7 +5,6 @@
 ; A.N.A.L.O.G. COMPUTING #10
 ;======================================
 
-                .include "equates_system_atari8.asm"
                 .include "equates_system_c256.asm"
                 .include "equates_zeropage.asm"
                 .include "equates_game.asm"
@@ -45,10 +44,11 @@ START           .frsGraphics mcGraphicsOn|mcSpriteOn,mcVideoMode320
                 .frsMouse_off
                 .frsBorder_off
 
-                jsr SIOINV              ; init sounds
+                ;jsr SIOINV              ; init sounds
 
-                lda #$11                ; P/M priority
-                sta PRIOR
+;   5th-player, player > playfield > background
+                ;lda #$11                ; P/M priority
+                ;sta GPRIOR
 
                 lda #1                  ; don't show player or star
                 sta SHOOFF              ; we still must clear P/M area
@@ -76,11 +76,11 @@ ZSCLP2          sta ScoreLine2+12,X
                 sta FILLON              ; else we'll wind up with nasty things happening!
                 sta DEADFG
                 sta NOCCHG
-                sta HITCLR
-                sta DMACTL
-                sta NMIEN
+                ;sta HITCLR             ; clear collisions
+                ;sta DMACTL             ; turn off the screen
+                ;sta NMIEN              ; disable interrupts
                 sta HASDRN
-                sta AUDCTL
+                ;sta AUDCTL             ; reset POKEY
 
                 ldx #5                  ; let's zero out the score counter...
 CMSLP           sta SCORE,X
@@ -95,43 +95,42 @@ CMSLP           sta SCORE,X
                 ora #$90                ; and put them in the score line
                 sta ScoreLine2+19
 
-                lda #$0A                ; next we set up the colors we want to use.
-                sta COLPF0
-                lda #$24
-                sta COLPF1
-                lda #$94
-                sta COLPF2
-                lda #$C4
-                sta COLPF3
-                lda #0
-                sta COLBK
-                lda #$76
-                sta COLPM3
-                lda #$34
-                sta COLPM0
+                ;lda #$0A               ; next we set up the colors we want to use.
+                ;sta COLPF0
+                ;lda #$24
+                ;sta COLPF1
+                ;lda #$94
+                ;sta COLPF2
+                ;lda #$C4
+                ;sta COLPF3
+                ;lda #0
+                ;sta COLBK
+                ;lda #$76
+                ;sta COLPM3
+                ;lda #$34
+                ;sta COLPM0
 
-                lda #<DLIST          	; we'd better tell the computer where our display list is located!
-                sta DLISTL
-                lda #>DLIST
-                sta DLISTL+1
+                ;lda #<DLIST          	; we'd better tell the computer where our display list is located!
+                ;sta DLISTL
+                ;lda #>DLIST
+                ;sta DLISTL+1
 
-                ldy #<INTRPT         	; tell where the vertical blank interrupt is
-                ldx #>INTRPT
+                ;lda #6
+                ;ldy #<INTRPT           ; tell where the vertical blank interrupt is
+                ;ldx #>INTRPT
+                ;jsr SETVBV             ; and set it!
 
-                lda #6
-                jsr SETVBV              ; and set it!
+                ;lda #>PMAREA           ; here's our P/M graphics area!
+                ;sta PMBASE
 
-                lda #>PMAREA         	; here's our P/M graphics area!
-                sta PMBASE
+                ;lda #$2E               ; turn on the DMA control
+                ;sta DMACTL             ; dma instruction fetch, P/M DMA, standard playfield
 
-                lda #$2E                ; turn on the DMA control
-                sta DMACTL
+                ;lda #$3                ; ... and graphics control!
+                ;sta GRACTL             ; turn on P/M
 
-                lda #$3                 ; ... and graphics control!
-                sta GRACTL
-
-                lda #$40                ; enable VBI
-                sta NMIEN
+                ;lda #$40               ; enable VBI
+                ;sta NMIEN
 
                 jmp CLRDSP
 
@@ -315,18 +314,21 @@ CLRTLP          sta DIR,X               ; CLEAR DIRECTION
 GETSTK          lda PAUSE               ; GAME PAUSED?
                 bne GETSTK              ; YES, LOOP AND WAIT.
 
-                lda #$FD                ; DO 'WARBLE' SOUND
-                sta AUDF1               ; USING SOUND
-                lda #$FE                ; CHANNELS 1-3
-                sta AUDF2
-                lda #$FF
-                sta AUDF3
-                lda #$A3
-                sta AUDC1
-                sta AUDC2
-                sta AUDC3
-                lda #0                  ; NO ATTRACT MODE!
-                sta ATTRACT
+                ;lda #$FD               ; DO 'WARBLE' SOUND
+                ;sta AUDF1              ; USING SOUND
+                ;lda #$FE               ; CHANNELS 1-3
+                ;sta AUDF2
+                ;lda #$FF
+                ;sta AUDF3
+
+                ;lda #$A3               ; volume=3, distortion=5 (pure tone)
+                ;sta AUDC1
+                ;sta AUDC2
+                ;sta AUDC3
+
+                ;lda #0                 ; NO ATTRACT MODE!
+                ;sta ATTRACT
+
                 lda DEADFG              ; DID STAR HIT US?
                 beq ALIVE               ; NO!
 
@@ -357,7 +359,7 @@ JGSTK           jmp GETSTK              ; GO GET STICK
 
 GOTSTK          lda #4                  ; SET UP THE
                 sta MOVTIM              ; MOVEMENT TIMER
-                lda STICK               ; GET THE STICK
+                lda JOYSTICK0           ; GET THE STICK
                 sta STKHLD              ; AND SAVE IT
                 tax                     ; THEN LOOK UP
                 lda XD,X                ; X DIRECTION
@@ -410,7 +412,8 @@ GOTSTK          lda #4                  ; SET UP THE
                 lda BITSON,X
                 and (LO),Y
                 pha                     ; AND SAVE IT!
-                lda STRIG               ; TRIGGER PRESSED?
+                lda JOYSTICK0           ; TRIGGER PRESSED?
+                and #$10
                 bne NOTDRN              ; NO!
 
                 pla                     ; OK TO DRAW?
@@ -616,26 +619,29 @@ SHSLP           lda SCORE,X             ; SCORE IN
 ;--------------------------------------
 ; THIS SECTION HANDLES PLAYER'S DEATH
 ;--------------------------------------
-CRASH           lda #0                  ; NO WARBLE SOUND
-                sta AUDC1
-                sta AUDC2
-                sta AUDC3
+CRASH           ;lda #0                 ; NO WARBLE SOUND
+                ;sta AUDC1              ; volume=0, distortion=0
+                ;sta AUDC2
+                ;sta AUDC3
+
                 lda #1                  ; NO PLAYER COLOR
                 sta NOCCHG              ; CHANGE IN VBI
                 lda #15                 ; SET BRIGHTNESS OF
                 sta DEDBRT              ; PLAYER DEATH.
 TIMRST          lda #5                  ; SET DEATH TIMER
                 sta TIMER               ; TO 5 JIFFIES.
-DEADCC          lda DEDBRT              ; MOVE BRIGHTNESS
-                sta AUDC1               ; TO DEATH SOUND VOLUME
-                lda RANDOM              ; GET RANDOM
-                and #$1F                ; DEATH SOUND
-                sta AUDF1               ; FREQUENCY
-                lda RANDOM              ; GET RANDOM
+DEADCC          ;lda DEDBRT             ; MOVE BRIGHTNESS
+                ;sta AUDC1              ; TO DEATH SOUND VOLUME ; volume=variable, distortion=0
+
+                ;lda SID_RANDOM         ; GET RANDOM
+                ;and #$1F               ; DEATH SOUND
+                ;sta AUDF1              ; FREQUENCY
+
+                lda SID_RANDOM          ; GET RANDOM
                 and #$F0                ; DEATH COLOR
                 ora DEDBRT              ; ADD BRITE
-                sta COLPF1              ; PUT IN LINE COLOR
-                sta COLPM3              ; AND PLAYER COLOR
+                ;sta COLPF1             ; PUT IN LINE COLOR
+                ;sta COLPM3             ; AND PLAYER COLOR
                 lda TIMER               ; TIMER DONE YET?
                 bne DEADCC              ; NO, GO CHANGE COLOR.
 
@@ -645,13 +651,13 @@ DEADCC          lda DEDBRT              ; MOVE BRIGHTNESS
                 dec LIVES               ; 1 LESS LIFE
                 lda LIVES               ; GET # LIVES
                 ora #$90                ; ADD COLOR
-                sta ScoreLine2+19           ; AND DISPLAY!
+                sta ScoreLine2+19       ; AND DISPLAY!
                 cmp #$90                ; ZERO LIVES?
                 bne NOTDED              ; NO!
 
-                lda #<GameOver          	; WE'RE COMPLETELY
+                lda #<GameOver          ; WE'RE COMPLETELY
                 sta SCDL+1              ; DEAD, SHOW
-                lda #>GameOver          	; 'GAME OVER'
+                lda #>GameOver          ; 'GAME OVER'
                 sta SCDL+2              ; MESSAGE
 CKSTRT          lda CONSOL              ; WAIT FOR START
                 and #1                  ; KEY...
@@ -661,9 +667,9 @@ RELEAS          lda CONSOL              ; KEY PRESSED, NOW
                 and #1                  ; WAIT FOR RELEASE!
                 beq RELEAS              ; NOT RELEASED YET!
 
-                lda #<ScoreLine1         	; PUT SCORE
+                lda #<ScoreLine1        ; PUT SCORE
                 sta SCDL+1              ; LINE BACK
-                lda #>ScoreLine1         	; IN DISPLAY
+                lda #>ScoreLine1        ; IN DISPLAY
                 sta SCDL+2              ; LIST...
                 jmp START               ; AND START GAME!
 
@@ -674,13 +680,13 @@ RELEAS          lda CONSOL              ; KEY PRESSED, NOW
 ;--------------------------------------
 NOTDED          lda #1                  ; DON'T SHOW
                 sta SHOOFF              ; PLAYER
-NEWLOC          lda RANDOM              ; GET RANDOM X
+NEWLOC          lda SID_RANDOM          ; GET RANDOM X
                 and #$FE                ; MUST BE EVEN
                 cmp #159                ; AND ON SCREEN
                 bcs NEWLOC
 
                 sta PLOTX
-CSHY            lda RANDOM              ; GET RANDOM Y
+CSHY            lda SID_RANDOM          ; GET RANDOM Y
                 and #$7E                ; MUST BE EVEN
                 cmp #85                 ; AND ON SCREEN
                 bcs CSHY
@@ -718,11 +724,12 @@ CSHY            lda RANDOM              ; GET RANDOM Y
                 and (LO),Y
                 ora COLOR1,X
                 sta (LO),Y
-JCTRK           lda #$24                ; RESTORE DRAW LINE
-                sta COLPF1              ; COLOR
+JCTRK           ;lda #$24               ; RESTORE DRAW LINE
+                ;sta COLPF1             ; COLOR
+
                 lda #0
                 sta NOCCHG
-                sta HITCLR
+                ;sta HITCLR             ; clear collisions
                 sta DEADFG
                 jmp CLRTRK              ; AND GO START NEW TRACK.
 
@@ -883,11 +890,11 @@ MSTR            lda STRSPD              ; SET MOVEMENT TIMER
                 sec
                 sbc #44
                 sta STRLX
-                lda RANDOM              ; WANT TO CHANGE
+                lda SID_RANDOM          ; WANT TO CHANGE
                 cmp #240                ; THE STAR'S DIRECTION?
                 bcc SAMSTD              ; NO, USE SAME.
 
-NEWDIR          lda RANDOM              ; GET RANDOM
+NEWDIR          lda SID_RANDOM          ; GET RANDOM
                 and #7                  ; DIRECTION
                 jmp DIRCHK
 
@@ -1201,9 +1208,10 @@ ENDMM2          jsr PLOTCL
 ; ROUTINE, AS IT WILL FILL ANY SHAPE
 ; THAT IS OUTLINED IN COLOR 2.
 ;======================================
-FILL            lda #0                  ; TURN OFF
-                sta AUDC2               ; SOUND CHANNELS
-                sta AUDC3               ; 2 AND 3.
+FILL            ;lda #0                 ; TURN OFF
+                ;sta AUDC2              ; SOUND CHANNELS
+                ;sta AUDC3              ; 2 AND 3.
+
                 lda MAXY                ; INITIALIZE
                 sec                     ; THE FILL
                 sbc MINY                ; SOUND
@@ -1321,10 +1329,12 @@ LOCATE          lda FX
                 sta FX
                 lda #0
                 sta C2TALY
-                lda #$86
-                sta AUDC1
-                lda FILFRQ
-                sta AUDF1
+
+                ;lda #$86               ; volume=6, distortion=4
+                ;sta AUDC1
+
+                lda FILFRQ              ; variable frequency
+                ;sta AUDF1
                 beq NOFFDC
 
                 dec FILFRQ
@@ -1408,27 +1418,28 @@ NOLOCP          lda #0
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; VBI ROUTINE
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-INTRPT          lda KEY                 ; IS SPACE BAR
+INTRPT          lda KEYCHAR             ; IS SPACE BAR
                 cmp #$21                ; PRESSED?
                 bne NOPRES              ; NO, CHECK FOR PAUSE.
 
                 lda #$FF                ; CLEAR OUT
-                sta KEY                 ; KEY CODE,
+                sta KEYCHAR             ; KEY CODE,
                 lda PAUSE               ; COMPLEMENT
                 eor #$FF                ; THE PAUSE
                 sta PAUSE               ; FLAG.
 NOPRES          lda PAUSE               ; ARE WE PAUSED?
                 beq NOPAUS              ; NO!
 
-                jmp XITVBV              ; PAUSED, NO VBI!
+                rti                     ; PAUSED, NO VBI!
 
 NOPAUS          lda BSCNT               ; MORE BUMP SOUND?
                 bmi NOBS                ; NO, PROCESS TIMER.
 
-                ora #$A0                ; MIX VOLUME WITH
-                sta AUDC4               ; PURE TONE,
-                lda #$80                ; SET UP BUMP
-                sta AUDF4               ; SOUND FREQUENCY
+                ;ora #$A0               ; MIX VOLUME WITH
+                ;sta AUDC4              ; PURE TONE,
+
+                ;lda #$80               ; SET UP BUMP
+                ;sta AUDF4              ; SOUND FREQUENCY
                 dec BSCNT               ; AND DECREMENT COUNT.
 NOBS            lda TIMER               ; TIMER DOWN TO ZERO?
                 beq NODEC               ; YES, DON'T DECREMENT.
@@ -1437,21 +1448,24 @@ NOBS            lda TIMER               ; TIMER DOWN TO ZERO?
 NODEC           lda FILLON              ; ARE WE FILLING?
                 beq NOFILL              ; NO, DO REST OF VBI.
 
-                jmp XITVBV              ; YES, EXIT VBI
+                rti                     ; YES, EXIT VBI
 
 NOFILL          lda #0                  ; CLEAR OUT
                 sta DEADFG              ; DEAD FLAG
-                lda P0PL                ; HAS PLAYER 0
-                and #$08                ; HIT PLAYER 3?
-                beq NOHITP              ; NO!
+
+                ;lda P0PL                ; HAS PLAYER 0
+                ;and #$08                ; HIT PLAYER 3?
+                ;beq NOHITP              ; NO!
+                bra NOHITP  ; HACK:
 
                 inc DEADFG              ; YES!!!
-NOHITP          lda P0PF                ; HAS PLAYER 0
-                and #$02                ; HIT COLOR 2?
-                beq NOHITL              ; NO!
+NOHITP          ;lda P0PF                ; HAS PLAYER 0
+                ;and #$02                ; HIT COLOR 2?
+                ;beq NOHITL              ; NO!
+                bra NOHITL ; HACK:
 
                 inc DEADFG              ; YES!!!
-NOHITL          sta HITCLR              ; CLEAR COLLISION.
+NOHITL          ;sta HITCLR             ; clear collisions
                 lda MOVTIM              ; MOVEMENT TIMER ZERO?
                 beq NOMDEC              ; YES, DON'T DECREMENT.
 
@@ -1497,15 +1511,18 @@ VBREST          ldy STRPOS              ; THIS SECTION
                 sta PL0+6,X
                 lda STARB8,Y
                 sta PL0+7,X
+
                 lda STRHOR              ; SET STAR'S
-                sta HPOSP0              ; HORIZ. POS.
+                sta SP00_X_POS          ; HORIZ. POS.
+
                 lda SHOOFF              ; OK TO SHOW PLAYER?
                 bne ENDVBI              ; NO, EXIT VBI
 
                 lda PX                  ; SET PLAYER'S
                 clc                     ; HORIZONTAL
                 adc #47                 ; POSITION
-                sta HPOSP3
+                sta SP03_X_POS
+
                 lda PY                  ; DRAW PLAYER
                 clc                     ; IN PLAYER 3
                 adc #$10                ; MEMORY
@@ -1523,47 +1540,47 @@ VBREST          ldy STRPOS              ; THIS SECTION
                 lda NOCCHG              ; COLOR CHANGE OK?
                 bne ENDVBI              ; NO, EXIT VBI
 
-                inc COLPM3              ; YES, CYCLE THE COLOR.
-ENDVBI          jmp XITVBV              ; DONE WITH VBI!
+                ;inc COLPM3             ; YES, CYCLE THE COLOR.
+ENDVBI          rti                     ; DONE WITH VBI!
 
 
 ;--------------------------------------
 ;--------------------------------------
 
-DLIST           .byte AEMPTY8,AEMPTY8,AEMPTY8
+DLIST           ;.byte AEMPTY8,AEMPTY8,AEMPTY8
 
-                .byte $0D+ALMS
-                    .addr DISP
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D,$0D,$0D,$0D
-                .byte $0D
+                ;.byte $0D+ALMS
+                ;    .addr DISP
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D
 
-                .byte AEMPTY3
-SCDL            .byte $06+ALMS
-                    .addr ScoreLine1
-                .byte $06+ALMS
-                    .addr ScoreLine2
-                .byte AVB+AJMP
-                    .addr DLIST
+                ;.byte AEMPTY3
+SCDL            ;.byte $06+ALMS
+                ;    .addr ScoreLine1
+                ;.byte $06+ALMS
+                ;    .addr ScoreLine2
+                ;.byte AVB+AJMP
+                ;    .addr DLIST
 
 ScoreLine1      .text 'TGT:       CUR:     '
 ScoreLine2      .text 'LV:   SCORE:        '
