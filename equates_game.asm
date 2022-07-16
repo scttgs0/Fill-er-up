@@ -10,3 +10,9 @@ PL2             = PMAREA+768
 PL3             = PMAREA+896
 
 DISP            = $3000
+
+panelTarget     = ScoreLine1+4
+panelCurrent    = ScoreLine1+15
+panelLevel      = ScoreLine2+3
+panelScore      = ScoreLine2+12
+panelLives      = ScoreLine2+19

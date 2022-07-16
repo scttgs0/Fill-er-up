@@ -149,10 +149,11 @@ _drawln         jsr PlotCalc
 
                 lda DECIMAL+1           ; get decimal level #
                 ora #$90                ; add color
-                sta ScoreLine2+3        ; put in score line
+                sta panelLevel          ; put in score line
                 lda DECIMAL             ; same for 2nd
                 ora #$90                ; level #
-                sta ScoreLine2+4        ; digit
+                sta panelLevel+1        ; digit
+
                 ldx LEVEL               ; get this level's
                 lda TGTLO,X             ; parameters
                 sta LOWK
@@ -479,7 +480,7 @@ _nxspos         iny
                 ldx #5                  ; now place the
 _shslp          lda SCORE,X             ; score in
                 ora #$10                ; score line #2
-                sta ScoreLine2+12,X
+                sta panelScore,X
                 dex
                 bpl _shslp
 
@@ -535,7 +536,8 @@ _deadcc         ;lda DEDBRT             ; move brightness
                 dec LIVES               ; 1 less life
                 lda LIVES               ; get # lives
                 ora #$90                ; add color
-                sta ScoreLine2+19       ; and display!
+                sta panelLives          ; and display!
+
                 cmp #$90                ; zero lives?
                 bne RandomLocation      ; no!
 

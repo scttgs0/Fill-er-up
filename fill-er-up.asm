@@ -62,14 +62,14 @@ START           .proc
                 sta STRHOR
 
                 lda #$D0                ; now let's zero out the score areas!
-                ldx #4
-ZSCLP           sta ScoreLine1+4,X
-                sta ScoreLine1+15,X
+                ldx #4                  ; 5-digit values
+ZSCLP           sta panelTarget,X
+                sta panelCurrent,X
                 dex
                 bpl ZSCLP
 
                 ldx #5
-ZSCLP2          sta ScoreLine2+12,X
+ZSCLP2          sta panelScore,X
                 dex
                 bpl ZSCLP2
 
@@ -92,9 +92,8 @@ CMSLP           sta SCORE,X
 
                 lda #3                  ; we start with 3 lives
                 sta LIVES
-
-                ora #$90                ; and put them in the score line
-                sta ScoreLine2+19
+                ora #$90                ; add color
+                sta panelLives          ; and put them in the score line
 
                 ;lda #$0A               ; next we set up the colors we want to use.
                 ;sta COLPF0
