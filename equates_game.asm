@@ -9,7 +9,10 @@ PL1             = PMAREA+640
 PL2             = PMAREA+768
 PL3             = PMAREA+896
 
-DISP            = $3000
+DISP            = $B00000
+
+CharResX        = 40
+CharResY        = 30
 
 panelTarget     = ScoreLine1+4
 panelCurrent    = ScoreLine1+15

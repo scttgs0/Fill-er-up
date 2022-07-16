@@ -10,6 +10,7 @@ BITMAPTXT1      = $B71A00
 BITMAPTXT2      = $B74C00
 BITMAPTXT3      = $B31400
 
+
 ;======================================
 ; Create the lookup table (LUT)
 ;======================================
@@ -26,6 +27,46 @@ InitLUT         .proc
                 plb
                 plp
                 rts
+                .endproc
+
+
+;======================================
+; Initialize the CHAR_LUT tables
+;======================================
+InitCharLUT     .proc
+v_LUTSize       .var 64                 ; 4-byte color * 16 colors
+;---
+
+                ldx #$00
+_next1          lda Custom_LUT,x
+                sta FG_CHAR_LUT_PTR,x
+                sta BG_CHAR_LUT_PTR,x
+
+                inx
+                cpx #v_LUTSize
+                bne _next1
+
+                rts
+
+;--------------------------------------
+
+Custom_LUT      .dword $00282828        ; 0: Dark Jungle Green  [Editor Text bg]
+                .dword $00DDDDDD        ; 1: Gainsboro          [Editor Text fg]
+                .dword $00143382        ; 2: Saint Patrick Blue [Editor Info bg][Dialog bg]
+                .dword $006B89D7        ; 3: Blue Gray          [Editor Info fg][Dialog fg]
+                .dword $00693972        ; 4: Indigo             [Monitor Info bg]
+                .dword $00B561C2        ; 5: Deep Fuchsia       [Monitor Info fg][Window Split]
+                .dword $0076ADEB        ; 6: Maya Blue          [Reserved Word]
+                .dword $007A7990        ; 7: Fern Green         [Comment]
+                .dword $0074D169        ; 8: Moss Green         [Constant]
+                .dword $00D5CD6B        ; 9: Medium Spring Bud  [String]
+                .dword $00C563BD        ; A: Pastel Violet      [Loop Control]
+                .dword $005B8B46        ; B: Han Blue           [ProcFunc Name]
+                .dword $00BC605E        ; C: Medium Carmine     [Define]
+                .dword $00C9A765        ; D: Satin Sheen Gold   [Type]
+                .dword $0062C36B        ; E: Mantis Green       [Highlight]
+                .dword $00BC605E        ; F: Medium Carmine     [Warning]
+
                 .endproc
 
 
@@ -275,6 +316,42 @@ InitBitmap      .proc
                 rts
                 .endproc
 
+
+;======================================
+; Clear the visible screen
+;======================================
+ClearScreen     .proc
+v_QtyPages      .var $04                ; 40x30 = $4B0... 4 pages + 176 bytes
+
+v_Empty         .var $00
+v_TextColor     .var $40
+;---
+
+;   reset the addresses to make this reentrant
+                lda #<>CS_TEXT_MEM_PTR
+                sta _setAddr1
+                lda #<>CS_COLOR_MEM_PTR
+                sta _setAddr2
+
+                ldx #$00
+                ldy #v_QtyPages
+
+_clearNext      lda #v_Empty
+_setAddr1       sta CS_TEXT_MEM_PTR,x   ; SMC
+
+                lda #v_TextColor
+_setAddr2       sta CS_COLOR_MEM_PTR,x  ; SMC
+
+                inx
+                bne _clearNext
+
+                inc _setAddr1+2         ; advance to next memory page
+                inc _setAddr2+2         ; advance to next memory page
+                dey
+                bne _clearNext
+
+                rts
+                .endproc
 
 ;======================================
 ; Blit bitmap text to VRAM

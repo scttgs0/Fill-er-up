@@ -41,9 +41,27 @@ BOOT            clc
 ; Start of Code
 ;--------------------------------------
 START           .proc
-                .frsGraphics mcGraphicsOn|mcSpriteOn,mcVideoMode320
+                .frsGraphics mcTextOn|mcOverlayOn|mcGraphicsOn|mcSpriteOn,mcVideoMode320
                 .frsMouse_off
                 .frsBorder_off
+
+                InitCharLUT
+
+                lda #<CharResX
+                sta COLS_PER_LINE
+                lda #>CharResX
+                sta COLS_PER_LINE+1
+                lda #CharResX
+                sta COLS_VISIBLE
+
+                lda #<CharResY
+                sta LINES_MAX
+                lda #>CharResY
+                sta LINES_MAX+1
+                lda #CharResY
+                sta LINES_VISIBLE
+
+                ClearScreen
 
                 ;jsr SIOINV              ; init sounds
 
