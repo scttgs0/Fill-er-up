@@ -5,14 +5,15 @@
 ; (IN A PLAYER) IN THE VBI.
 ;======================================
 MoveStar        .proc
-                lda SMTIM               ; time to move?
-                beq _mstr               ; yes, go do it
+                lda vStarMoveTimer      ; time to move?
+                beq _mstr               ;   yes, go do it
 
                 jmp GetStick            ; no, get stick
 
 _mstr           lda STRSPD              ; set movement timer
-                sta SMTIM               ; with star speed
-                lda STRHGT              ; adjust p/m
+                sta vStarMoveTimer      ; with star speed
+
+                lda vStarHeight         ; adjust P/M
                 sec                     ; coordinates to
                 sbc #13                 ; match playfield
                 sta STRLY               ; plotting
@@ -47,7 +48,7 @@ _dirchk         tax                     ; check to see
                 beq _wayclr             ; no, all clear!
 
                 lda #15                 ; hit something,
-                sta BSCNT               ; start bump sound and
+                sta vBumpSndCount               ; start bump sound and
                 bne _newdir             ; get new direction.
 
 _wayclr         lda PLOTX               ; adjust star
@@ -57,7 +58,7 @@ _wayclr         lda PLOTX               ; adjust star
                 lda PLOTY               ; from playfield.
                 clc
                 adc #13
-                sta STRHGT
+                sta vStarHeight
                 lda TMPDIR              ; set direction
                 sta STRDIR
                 jmp GetStick            ; and loop

@@ -10,14 +10,14 @@
 ;======================================
 Search          .proc
                 lda #1
-                sta FILLON
+                sta isFillOn
                 lda #0
                 sta D
                 lda STRHOR
                 sec
                 sbc #44
                 sta SX
-                lda STRHGT
+                lda vStarHeight
                 sec
                 sbc #13
                 sta SY
@@ -141,7 +141,7 @@ _outld2         cmp COLOR2,X
                 jsr FillRegion
 
                 lda #0
-                sta FILLON
+                sta isFillOn
                 rts
 
 _outle          jsr INCD

@@ -130,9 +130,9 @@ STARB8          ;.byte $81,$02,$04,$08,$10,$20,$40
                 .byte %00100000         ; ..#.....
                 .byte %01000000         ; .#......
 
-STARCT          .byte 0
-STRPOS          .byte 0
-STRHGT          .byte 0
+vStarRotTimer   .byte 0
+vStarRotPosition .byte 0
+vStarHeight     .byte 0
 STRHOR          .byte 0
 STRLX           .byte 0
 STRLY           .byte 0
@@ -178,10 +178,10 @@ FX              .byte 0
 FY              .byte 0
 TD              .byte 0
 D               .byte 0
-BSCNT           .byte 0
+vBumpSndCount   .byte 0
 FILFRQ          .byte 0
 TRIES           .byte 0
-FILLON          .byte 0
+isFillOn        .byte 0
 C2TALY          .byte 0
 NOCCHG          .byte 0
 DEDBRT          .byte 0

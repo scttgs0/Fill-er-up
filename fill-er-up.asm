@@ -71,11 +71,11 @@ START           .proc
 
                 lda #1                  ; don't show player or star
                 sta SHOOFF              ; we still must clear P/M area
-                sta FILLON
+                sta isFillOn
                 jsr SpritesClear
 
                 lda #64                 ; and set up the star's height and horizontal position
-                sta STRHGT
+                sta vStarHeight
                 lda #128
                 sta STRHOR
 
@@ -92,8 +92,8 @@ ZSCLP2          sta panelScore,X
                 bpl ZSCLP2
 
                 lda #0                  ; these items must be set to zero on startup or
-                sta FILLON              ; else we'll wind up with nasty things happening!
-                sta DEADFG
+                sta isFillOn            ; else we'll wind up with nasty things happening!
+                sta isDead
                 sta NOCCHG
                 ;sta HITCLR             ; clear collisions
                 ;sta DMACTL             ; turn off the screen
@@ -163,7 +163,19 @@ CMSLP           sta SCORE,X
                 .include "SPRITE_star.asm"
                 .include "search.asm"
                 .include "regionfill.asm"
+
+
+;--------------------------------------
+                .align $100
+;--------------------------------------
+
                 .include "interrupt.asm"
+
+
+;--------------------------------------
+                .align $100
+;--------------------------------------
+
                 .include "DATA.asm"
 
 

@@ -208,7 +208,7 @@ GetStick        .proc
                 ;lda #0                 ; no attract mode!
                 ;sta ATTRACT
 
-                lda DEADFG              ; did star hit us?
+                lda isDead              ; did star hit us?
                 beq _alive              ; no!
 
                 ldx LEVEL               ; it hit us--
@@ -229,15 +229,15 @@ GetStick        .proc
 
 _jcrsh          jmp Crash               ; go kill player.
 
-_alive          lda MOVTIM              ; player moving?
-                beq _gotstk              ; yes--get stick.
+_alive          lda vMoveTimer          ; player moving?
+                beq _gotstk             ; yes--get stick.
 
                 jmp MoveStar            ; no, move star.
 
 _jgstk          jmp GetStick            ; go get stick
 
 _gotstk         lda #4                  ; set up the
-                sta MOVTIM              ; movement timer
+                sta vMoveTimer          ; movement timer
                 lda JOYSTICK0           ; get the stick
                 sta STKHLD              ; and save it
                 tax                     ; then look up
@@ -484,17 +484,20 @@ _shslp          lda SCORE,X             ; score in
                 dex
                 bpl _shslp
 
-                lda #1                  ; stop vbi for
-                sta FILLON              ; a moment
+                lda #1                  ; stop VBI for a moment
+                sta isFillOn
                 sta SHOOFF
+
                 jsr SpritesClear        ; clear p/m area
 
-                lda #64                 ; initialize
-                sta STRHGT              ; the
-                lda #128                ; star
-                sta STRHOR              ; position
-                lda #0                  ; vbi on again
-                sta FILLON
+                lda #64                 ; initialize the star position
+                sta vStarHeight
+                lda #128
+                sta STRHOR
+
+                lda #0                  ; VBI on again
+                sta isFillOn
+
                 jmp ClearDisplay        ; go clear display!
 
                 .endproc
@@ -619,7 +622,7 @@ _jctrk          ;lda #$24               ; restore draw line
                 lda #0
                 sta NOCCHG
                 ;sta HITCLR             ; clear collisions
-                sta DEADFG
+                sta isDead
                 jmp ClearTrackTbl       ; and go start new track.
 
                 .endproc
