@@ -390,32 +390,32 @@ _12             ldy vStarRotPosition
                 ldx vStarHeight
 
                 lda #0
-                sta PL0-1,X
-                sta PL0+8,X
+                sta SPR_STAR-1,X
+                sta SPR_STAR+8,X
 
                 lda STARB1,Y
-                sta PL0,X
+                sta SPR_STAR,X
 
                 lda STARB2,Y
-                sta PL0+1,X
+                sta SPR_STAR+1,X
 
                 lda STARB3,Y
-                sta PL0+2,X
+                sta SPR_STAR+2,X
 
                 lda STARB4,Y
-                sta PL0+3,X
+                sta SPR_STAR+3,X
 
                 lda STARB5,Y
-                sta PL0+4,X
+                sta SPR_STAR+4,X
 
                 lda STARB6,Y
-                sta PL0+5,X
+                sta SPR_STAR+5,X
 
                 lda STARB7,Y
-                sta PL0+6,X
+                sta SPR_STAR+6,X
 
                 lda STARB8,Y
-                sta PL0+7,X
+                sta SPR_STAR+7,X
 
                 lda STRHOR              ; set star's horiz. pos.
                 sta SP00_X_POS
@@ -434,17 +434,17 @@ _12             ldy vStarRotPosition
                 tax
 
                 lda #0
-                sta PL3-3,X
-                sta PL3-2,X
-                sta PL3+2,X
-                sta PL3+3,X
+                sta SPR_PLAYER-3,X
+                sta SPR_PLAYER-2,X
+                sta SPR_PLAYER+2,X
+                sta SPR_PLAYER+3,X
 
                 lda #$40
-                sta PL3-1,X
-                sta PL3+1,X
+                sta SPR_PLAYER-1,X
+                sta SPR_PLAYER+1,X
 
                 lda #$A0
-                sta PL3,X
+                sta SPR_PLAYER,X
 
                 lda NOCCHG              ; color change ok?
                 bne _XIT                ;   no, exit VBI

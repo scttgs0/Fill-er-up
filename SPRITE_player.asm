@@ -4,11 +4,8 @@
 SpritesClear    .proc
                 lda #0
                 ldx #127
-_next1          sta MISSLS,X            ; missiles,
-                sta PL0,X               ; player 0,
-                sta PL1,X               ; player 1,
-                sta PL2,X               ; player 2,
-                sta PL3,X               ; and player 3!
+_next1          sta SPR_STAR,X
+                sta SPR_PLAYER,X
                 dex
                 bne _next1
 
@@ -544,23 +541,26 @@ _deadcc         ;lda DEDBRT             ; move brightness
                 cmp #$30                ; zero lives?
                 bne RandomLocation      ; no!
 
-                lda #<GameOver          ; we're completely
-                sta SCDL+1              ; dead, show
-                lda #>GameOver          ; 'game over'
-                sta SCDL+2              ; message
+;   we're completely dead, show 'game over' message
+                lda #<GameOver
+                sta SCDL+1
+                lda #>GameOver
+                sta SCDL+2
+                jsr RenderPanel
+
 _ckstrt         lda CONSOL              ; wait for start
                 and #1                  ; key...
-                bne _ckstrt             ; not pressed--loop.
+                bne _ckstrt             ;   not pressed--loop.
 
 _releas         lda CONSOL              ; key pressed, now
                 and #1                  ; wait for release!
-                beq _releas              ; not released yet!
+                beq _releas             ;   not released yet!
 
-                lda #<ScoreLine1        ; put score
-                sta SCDL+1              ; line back
-                lda #>ScoreLine1        ; in display
-                sta SCDL+2              ; list...
-
+;   put the normal score line back (replace 'game over')
+                lda #<ScoreLine1
+                sta SCDL+1
+                lda #>ScoreLine1
+                sta SCDL+2
                 jsr RenderPanel
 
                 jmp START               ; and start game!

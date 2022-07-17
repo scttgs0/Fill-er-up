@@ -3,11 +3,8 @@
 ;--------------------------------------
 
 PMAREA          = $1000
-MISSLS          = PMAREA+384
-PL0             = PMAREA+512
-PL1             = PMAREA+640
-PL2             = PMAREA+768
-PL3             = PMAREA+896
+SPR_STAR        = PMAREA+512            ; star
+SPR_PLAYER      = PMAREA+896            ; player
 
 DISP            = $B00000
 
