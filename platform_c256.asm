@@ -327,12 +327,16 @@ v_Empty         .var $00
 v_TextColor     .var $40
 ;---
 
+                php
+                .m16i8
+
 ;   reset the addresses to make this reentrant
                 lda #<>CS_TEXT_MEM_PTR
-                sta _setAddr1
+                sta _setAddr1+1
                 lda #<>CS_COLOR_MEM_PTR
-                sta _setAddr2
+                sta _setAddr2+1
 
+                .m8
                 ldx #$00
                 ldy #v_QtyPages
 
@@ -350,8 +354,10 @@ _setAddr2       sta CS_COLOR_MEM_PTR,x  ; SMC
                 dey
                 bne _clearNext
 
+                plp
                 rts
                 .endproc
+
 
 ;======================================
 ; Blit bitmap text to VRAM

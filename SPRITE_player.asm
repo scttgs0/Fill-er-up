@@ -148,10 +148,10 @@ _drawln         jsr PlotCalc
                 jsr ConvertDecimal      ; convert level #
 
                 lda DECIMAL+1           ; get decimal level #
-                ora #$90                ; add color
+                ora #$30                ; add color
                 sta panelLevel          ; put in score line
                 lda DECIMAL             ; same for 2nd
-                ora #$90                ; level #
+                ora #$30                ; level #
                 sta panelLevel+1        ; digit
 
                 ldx LEVEL               ; get this level's
@@ -538,10 +538,10 @@ _deadcc         ;lda DEDBRT             ; move brightness
 
                 dec LIVES               ; 1 less life
                 lda LIVES               ; get # lives
-                ora #$90                ; add color
+                ora #$30                ; add color
                 sta panelLives          ; and display!
 
-                cmp #$90                ; zero lives?
+                cmp #$30                ; zero lives?
                 bne RandomLocation      ; no!
 
                 lda #<GameOver          ; we're completely
@@ -560,6 +560,9 @@ _releas         lda CONSOL              ; key pressed, now
                 sta SCDL+1              ; line back
                 lda #>ScoreLine1        ; in display
                 sta SCDL+2              ; list...
+
+                jsr RenderPanel
+
                 jmp START               ; and start game!
 
                 .endproc

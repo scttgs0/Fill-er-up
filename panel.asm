@@ -46,11 +46,33 @@ _showit         ldx #$4
                 bmi _XIT
 
 _next2          lda DECIMAL,X
-                ora #$D0
+                ora #$30
                 sta ScoreLine1,Y
                 iny
                 dex
                 bpl _next2
 
+                jsr RenderPanel
+
 _XIT            rts
+                .endproc
+
+
+;======================================
+;
+;======================================
+RenderPanel     .proc
+                php
+                .m8i8
+
+                ldx #39
+_nextChar1      lda #$32
+                sta CS_COLOR_MEM_PTR+(CharResY-2)*CharResX,x
+                lda ScoreLine1,x
+                sta CS_TEXT_MEM_PTR+(CharResY-2)*CharResX,x
+                dex
+                bpl _nextChar1
+
+                plp
+                rts
                 .endproc

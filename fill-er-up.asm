@@ -61,7 +61,7 @@ START           .proc
                 lda #CharResY
                 sta LINES_VISIBLE
 
-                ClearScreen
+                jsr ClearScreen
 
                 ;jsr SIOINV              ; init sounds
 
@@ -79,7 +79,7 @@ START           .proc
                 lda #128
                 sta STRHOR
 
-                lda #$D0                ; now let's zero out the score areas!
+                lda #$30                ; now let's zero out the score areas!
                 ldx #4                  ; 5-digit values
 ZSCLP           sta panelTarget,X
                 sta panelCurrent,X
@@ -110,7 +110,7 @@ CMSLP           sta SCORE,X
 
                 lda #3                  ; we start with 3 lives
                 sta LIVES
-                ora #$90                ; add color
+                ora #$30                ; add color
                 sta panelLives          ; and put them in the score line
 
                 ;lda #$0A               ; next we set up the colors we want to use.
@@ -170,6 +170,7 @@ CMSLP           sta SCORE,X
 ;--------------------------------------
 
                 .include "interrupt.asm"
+                .include "platform_c256.asm"
 
 
 ;--------------------------------------

@@ -33,7 +33,7 @@ SCDL            ;.byte $06+ALMS
                 ;.byte AVB+AJMP
                 ;    .addr DLIST
 
-ScoreLine1      .text 'TGT:       CUR:     '
+ScoreLine1      .text 'TGT:      CUR:      '
 ScoreLine2      .text 'LV:   SCORE:        '
 GameOver        .text '     GAME  OVER     '
 
