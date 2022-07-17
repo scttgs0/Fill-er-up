@@ -69,3 +69,5 @@ BOOT            clc
 ;--------------------------------------
 
                 .include "FONT.asm"
+palette         .include "PALETTE.asm"
+palette_end

@@ -24,3 +24,8 @@ itJoystick  = 0
 itKeyboard  = 1
 KEYCHAR         = $DC                   ; last key pressed
 CONSOL          = $DD                   ; state of OPTION,SELECT,START
+
+                * = $F0
+SOURCE          .dword ?                ; Starting address for the source data (4 bytes)
+DEST            .dword ?                ; Starting address for the destination block (4 bytes)
+SIZE            .dword ?                ; Number of bytes to copy (4 bytes)

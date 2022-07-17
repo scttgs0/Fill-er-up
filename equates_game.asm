@@ -2,10 +2,6 @@
 ; Miscellaneous Memory Usage
 ;--------------------------------------
 
-PMAREA          = $1000
-SPR_STAR        = PMAREA+512            ; star
-SPR_PLAYER      = PMAREA+896            ; player
-
 DISP            = $B00000
 
 CharResX        = 40

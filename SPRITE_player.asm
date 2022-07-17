@@ -4,8 +4,8 @@
 SpritesClear    .proc
                 lda #0
                 ldx #127
-_next1          sta SPR_STAR,X
-                sta SPR_PLAYER,X
+_next1          ;sta SPR_STAR,X ; HACK:
+                ;sta SPR_PLAYER,X
                 dex
                 bne _next1
 
@@ -446,6 +446,7 @@ _newlvl         lda LEVEL               ; if level < 15
                 beq _nolinc             ; increment
 
                 inc LEVEL               ; level
+
 ;
 ; INCREASE SCORE HERE
 ;

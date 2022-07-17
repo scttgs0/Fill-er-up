@@ -6,7 +6,9 @@ START           .proc
                 .frsMouse_off
                 .frsBorder_off
 
-                InitCharLUT
+                jsr InitLUT
+                ;jsr InitCharLUT
+                jsr InitSprites
 
                 lda #<CharResX
                 sta COLS_PER_LINE
@@ -98,9 +100,6 @@ CMSLP           sta SCORE,X
                 ;ldy #<Interrupt_VBI    ; tell where the vertical blank interrupt is
                 ;ldx #>Interrupt_VBI
                 ;jsr SETVBV             ; and set it!
-
-                ;lda #>PMAREA           ; here's our P/M graphics area!
-                ;sta PMBASE
 
                 ;lda #$2E               ; turn on the DMA control
                 ;sta DMACTL             ; dma instruction fetch, P/M DMA, standard playfield

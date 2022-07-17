@@ -1,9 +1,6 @@
 VRAM            = $B00000               ; First byte of video RAM
 
-TILESET         = VRAM
-TILEMAP         = $B20000
-TILEMAPUNITS    = $B22000
-SPRITES         = $B24000
+SPRITES         = VRAM+20000
 BITMAP          = $B30000
 BITMAPTXT0      = $B6F200
 BITMAPTXT1      = $B71A00
@@ -221,20 +218,22 @@ InitUnitOverlay .proc
 
 ;======================================
 ; Initialize the Sprite layer
+;--------------------------------------
+; sprites dimensions are 32x32 (1024)
 ;======================================
 InitSprites     .proc
                 php
                 phb
 
                 .m16i16
-                lda #$1800              ; Set the size
+                lda #$800               ; Set the size
                 sta SIZE
                 lda #$00
                 sta SIZE+2
 
-                lda #<>PLYR0            ; Set the source address
+                lda #<>SPR_STAR         ; Set the source address
                 sta SOURCE
-                lda #`PLYR0
+                lda #`SPR_STAR
                 sta SOURCE+2
 
                 lda #<>(SPRITES-VRAM)   ; Set the destination address
@@ -243,9 +242,6 @@ InitSprites     .proc
                 clc
                 adc #$400               ; 1024
                 sta SP01_ADDR
-                clc
-                adc #$1000              ; 1024*4
-                sta SP02_ADDR
 
                 lda #`(SPRITES-VRAM)
                 sta DEST+2
@@ -253,24 +249,20 @@ InitSprites     .proc
                 .m8
                 sta SP00_ADDR+2
                 sta SP01_ADDR+2
-                sta SP02_ADDR+2
 
                 jsr Copy2VRAM
 
                 .m16
-                lda #$00
+                lda #00
                 sta SP00_X_POS
                 sta SP00_Y_POS
                 sta SP01_X_POS
                 sta SP01_Y_POS
-                sta SP02_X_POS
-                sta SP02_Y_POS
 
                 .m8
                 lda #scEnable
                 sta SP00_CTRL
                 sta SP01_CTRL
-                sta SP02_CTRL
 
                 plb
                 plp
