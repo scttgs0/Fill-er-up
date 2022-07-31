@@ -554,29 +554,29 @@ SetFont         .proc
                 phy
 
                 lda #<GameFont
-                sta pSource
+                sta SOURCE
                 lda #>GameFont
-                sta pSource+1
+                sta SOURCE+1
                 lda #`GameFont
-                sta pSource+2
+                sta SOURCE+2
 
                 lda #<FONT_MEMORY_BANK0
-                sta pDest
+                sta DEST
                 lda #>FONT_MEMORY_BANK0
-                sta pDest+1
+                sta DEST+1
                 lda #`FONT_MEMORY_BANK0
-                sta pDest+2
+                sta DEST+2
 
-                ldx #$08                ; 8 pages
+                ldx #$06                ; 6 pages
 _nextPage       ldy #$00
-_next1          lda (pSource),Y
-                sta (pDest),Y
+_next1          lda (SOURCE),Y
+                sta (DEST),Y
 
                 iny
                 bne _next1
 
-                inc pSource+1
-                inc pDest+1
+                inc SOURCE+1
+                inc DEST+1
 
                 dex
                 bne _nextPage

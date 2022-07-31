@@ -7,7 +7,7 @@ START           .proc
                 .frsBorder_off
 
                 jsr InitLUT
-                ;jsr InitCharLUT
+                jsr InitCharLUT
                 jsr InitSprites
 
                 lda #<CharResX
@@ -24,6 +24,7 @@ START           .proc
                 lda #CharResY
                 sta LINES_VISIBLE
 
+                jsr SetFont
                 jsr ClearScreen
 
                 jsr InitSID             ; init sounds
