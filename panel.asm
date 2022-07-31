@@ -65,14 +65,64 @@ RenderPanel     .proc
                 php
                 .m8i8
 
-                ldx #39
-_nextChar1      lda #$32
-                sta CS_COLOR_MEM_PTR+(CharResY-2)*CharResX,x
-                lda ScoreLine1,x
-                sta CS_TEXT_MEM_PTR+(CharResY-2)*CharResX,x
-                dex
-                bpl _nextChar1
+;   reset color for two 40-char lines
+                ldx #$FF
+                ldy #$FF
+_nextColor      inx
+                iny
+                cpy #$28
+                beq _processText
 
-                plp
+                lda ScoreLine1Color,Y
+                sta CS_COLOR_MEM_PTR+(CharResY-3)*CharResX,X
+                inx
+                sta CS_COLOR_MEM_PTR+(CharResY-3)*CharResX,X
+                bne _nextColor
+
+;   process the text
+_processText    ldx #$FF
+                ldy #$FF
+_nextChar       inx
+                iny
+                cpy #$28
+                beq _XIT
+
+                lda ScoreLine1,Y
+                cmp #$20
+                beq _space
+
+                cmp #$41
+                bcc _number
+                bra _letter
+
+_space          sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+                inx
+                sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+
+                bra _nextChar
+
+;   (ascii-30)*2+$A0
+_number         sec
+                sbc #$30
+                asl A
+
+                clc
+                adc #$A0
+                sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+                inx
+                inc A
+                sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+
+                bra _nextChar
+
+_letter         sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+                inx
+                clc
+                adc #$40
+                sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+
+                bra _nextChar
+
+_XIT            plp
                 rts
                 .endproc

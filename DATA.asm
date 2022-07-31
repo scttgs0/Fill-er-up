@@ -33,24 +33,42 @@ SCDL            ;.byte $06+ALMS
                 ;.byte AVB+AJMP
                 ;    .addr DLIST
 
-ScoreLine1      .text 'TGT:      CUR:      '
-ScoreLine2      .text 'LV:   SCORE:        '
-GameOver        .text '     GAME  OVER     '
-GameOverLine2   .text 'LV:   SCORE:        '
+
+;--------------------------------------
+
+ScoreLine1      .text 'TGT:      CUR:      '    ; double-wide text
+ScoreLine2      .text 'LV:   SCORE:        '    ; double-wide text
+GameOver        .text '     GAME  OVER     '    ; double-wide text
+
+ScoreLine1Color .byte $10,$10,$10,$10
+                .byte $50,$50,$50,$50,$50
+                .byte $00
+                .byte $10,$10,$10,$10
+                .byte $50,$50,$50,$50,$50
+                .byte $00
+ScoreLine2Color .byte $10,$10,$10
+                .byte $30,$30
+                .byte $00
+                .byte $10,$10,$10,$10,$10,$10
+                .byte $50,$50,$50,$50,$50,$50
+                .byte $00
+                .byte $30
+
+;--------------------------------------
 
 
-;
+;-------------
 ; LEVEL TABLES
-;
+;-------------
 TGTLO           .byte 64,16,224,40,248,212,16,4
                 .byte 248,224,212,224,68,168,112,212
-TGTHI           .byte 31,39,46,35,42,48,39,41,42
-                .byte 46,48,46,47,47,48,48
+TGTHI           .byte 31,39,46,35,42,48,39,41
+                .byte 42,46,48,46,47,47,48,48
 
-STARSP          .byte 4,4,4,3,3,3,2,2,2,2,2,1,1
-                .byte 1,1,1
-KILLFG          .byte 0,0,1,0,1,1,0,1,1,1,1,0,0
-                .byte 1,1,1
+STARSP          .byte 4,4,4,3,3,3,2,2
+                .byte 2,2,2,1,1,1,1,1
+KILLFG          .byte 0,0,1,0,1,1,0,1
+                .byte 1,1,1,0,0,1,1,1
 
 SCORE           .byte 0,0,0,0,0,0
 SLLOC           .byte 0
@@ -64,9 +82,13 @@ HIWK            .byte 0
 SCTALY          .byte 0
 LIVES           .byte 0
 
-;
+;--------------------------------------
+
+
+;---------------------------
 ; STAR PLAYER-MISSILE IMAGES
-;
+;---------------------------
+
 STARB1          ;.byte $81,$40,$20,$10,$08,$04,$02
                 .byte %10000001         ; #......#
                 .byte %01000000         ; .#......

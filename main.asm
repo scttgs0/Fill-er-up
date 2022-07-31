@@ -60,7 +60,6 @@ ZSCLP2          sta panelScore,X
                 sta isDead
                 sta NOCCHG
                 ;sta HITCLR             ; clear collisions
-                ;sta DMACTL             ; turn off the screen
                 ;sta NMIEN              ; disable interrupts
                 sta HASDRN
 

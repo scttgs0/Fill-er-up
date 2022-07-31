@@ -14,6 +14,7 @@ BITMAPTXT3      = $B31400
 InitSID         .proc
                 pha
                 phx
+                .m8i8
 
 ;   reset the SID
                 lda #$00
@@ -59,6 +60,7 @@ InitLUT         .proc
                 ldy #<>GRPH_LUT0_PTR
                 mvn `Palette,`GRPH_LUT0_PTR
 
+                .m8i8
                 plb
                 plp
                 rts
@@ -72,6 +74,10 @@ InitCharLUT     .proc
 v_LUTSize       .var 64                 ; 4-byte color * 16 colors
 ;---
 
+                pha
+                phx
+                .m8i8
+
                 ldx #$00
 _next1          lda Custom_LUT,x
                 sta FG_CHAR_LUT_PTR,x
@@ -81,6 +87,8 @@ _next1          lda Custom_LUT,x
                 cpx #v_LUTSize
                 bne _next1
 
+                plx
+                pla
                 rts
 
 ;--------------------------------------
@@ -553,6 +561,7 @@ SetFont         .proc
                 phx
                 phy
 
+                .m8i8
                 lda #<GameFont
                 sta SOURCE
                 lda #>GameFont
@@ -569,8 +578,8 @@ SetFont         .proc
 
                 ldx #$06                ; 6 pages
 _nextPage       ldy #$00
-_next1          lda (SOURCE),Y
-                sta (DEST),Y
+_next1          lda [SOURCE],Y
+                sta [DEST],Y
 
                 iny
                 bne _next1
