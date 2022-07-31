@@ -9,9 +9,9 @@
 ; that is outlined in COLOR 2.
 ;======================================
 FillRegion      .proc
-                ;lda #0                 ; turn off
-                ;sta AUDC2              ; sound channels
-                ;sta AUDC3              ; 2 and 3.
+                lda #0                  ; turn off
+                sta SID_CTRL2           ; sound channels
+                sta SID_CTRL3           ; 2 and 3.
 
                 lda MAXY                ; initialize
                 sec                     ; the fill
@@ -142,11 +142,11 @@ Locate          .proc
                 lda #0
                 sta C2TALY
 
-                ;lda #$86               ; volume=6, distortion=4
-                ;sta AUDC1
+                lda #$86                ; volume=6, distortion=4
+                sta SID_CTRL1
 
                 lda FILFRQ              ; variable frequency
-                ;sta AUDF1
+                sta SID_FREQ1
                 beq _noffdc
 
                 dec FILFRQ

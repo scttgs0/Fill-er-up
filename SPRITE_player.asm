@@ -4,8 +4,8 @@
 SpritesClear    .proc
                 lda #0
                 ldx #127
-_next1          ;sta SPR_STAR,X ; HACK:
-                ;sta SPR_PLAYER,X
+_next1          sta SPR_STAR,X ; HACK:
+                sta SPR_PLAYER,X
                 dex
                 bne _next1
 
@@ -190,20 +190,17 @@ GetStick        .proc
                 lda PAUSE               ; game paused?
                 bne GetStick            ; yes, loop and wait.
 
-                ;lda #$FD               ; do 'warble' sound
-                ;sta AUDF1              ; using sound
-                ;lda #$FE               ; channels 1-3
-                ;sta AUDF2
-                ;lda #$FF
-                ;sta AUDF3
+                lda #$FD                ; do 'warble' sound
+                sta SID_FREQ1           ; using sound
+                lda #$FE                ; channels 1-3
+                sta SID_FREQ2
+                lda #$FF
+                sta SID_FREQ3
 
-                ;lda #$A3               ; volume=3, distortion=5 (pure tone)
-                ;sta AUDC1
-                ;sta AUDC2
-                ;sta AUDC3
-
-                ;lda #0                 ; no attract mode!
-                ;sta ATTRACT
+                lda #$A3                ; volume=3, distortion=5 (pure tone)
+                sta SID_CTRL1
+                sta SID_CTRL2
+                sta SID_CTRL3
 
                 lda isDead              ; did star hit us?
                 beq _alive              ; no!
@@ -505,10 +502,10 @@ _shslp          lda SCORE,X             ; score in
 ; THIS SECTION HANDLES PLAYER'S DEATH
 ;--------------------------------------
 Crash           .proc
-                ;lda #0                 ; no warble sound
-                ;sta AUDC1              ; volume=0, distortion=0
-                ;sta AUDC2
-                ;sta AUDC3
+                lda #0                  ; no warble sound
+                sta SID_CTRL1           ; volume=0, distortion=0
+                sta SID_CTRL2
+                sta SID_CTRL3
 
                 lda #1                  ; no player color
                 sta NOCCHG              ; change in vbi
@@ -516,12 +513,12 @@ Crash           .proc
                 sta DEDBRT              ; player death.
 _timrst         lda #5                  ; set death timer
                 sta TIMER               ; to 5 jiffies.
-_deadcc         ;lda DEDBRT             ; move brightness
-                ;sta AUDC1              ; to death sound volume ; volume=variable, distortion=0
+_deadcc         lda DEDBRT              ; move brightness
+                sta SID_CTRL1           ; to death sound volume ; volume=variable, distortion=0
 
-                ;lda SID_RANDOM         ; get random
-                ;and #$1F               ; death sound
-                ;sta AUDF1              ; frequency
+                lda SID_RANDOM          ; get random
+                and #$1F                ; death sound
+                sta SID_FREQ1           ; frequency
 
                 lda SID_RANDOM          ; get random
                 and #$F0                ; death color

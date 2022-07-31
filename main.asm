@@ -26,10 +26,10 @@ START           .proc
 
                 jsr ClearScreen
 
-                ;jsr SIOINV              ; init sounds
+                jsr InitSID             ; init sounds
 
 ;   5th-player, player > playfield > background
-                ;lda #$11                ; P/M priority
+                ;lda #$11               ; P/M priority
                 ;sta GPRIOR
 
                 lda #1                  ; don't show player or star
@@ -62,7 +62,6 @@ ZSCLP2          sta panelScore,X
                 ;sta DMACTL             ; turn off the screen
                 ;sta NMIEN              ; disable interrupts
                 sta HASDRN
-                ;sta AUDCTL             ; reset POKEY
 
                 ldx #5                  ; let's zero out the score counter...
 CMSLP           sta SCORE,X
