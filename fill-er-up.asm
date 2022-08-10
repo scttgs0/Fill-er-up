@@ -5,9 +5,12 @@
 ; A.N.A.L.O.G. COMPUTING #10
 ;======================================
 
-;   SP00        star
-;   SP01        player
+;   SP00        player
+;   SP01        star
 
+;   Graphics    160x129                 ; 86 graphic; 27 blanks; 16 text
+;       ours    320x240                 ; 76,800 bytes [$12C00 = 300 pages]
+;   Playfield   318x170
 
                 .cpu "65816"
 

@@ -1,26 +1,26 @@
 BkColor         .dword $00000000
-PfColor0        .dword $00267420    ; tree
-PfColor1        .dword $0073716f    ; city
-PfColor2        .dword $00202d78    ; river
-PfColor3        .dword $00757420    ; mountain
-PfColor4        .dword $00462075    ; swamp
+PfColor0        .dword $00df251c
+PfColor1        .dword $0073716f
+PfColor2        .dword $00202d78
+PfColor3        .dword $00757420
+PfColor4        .dword $00462075
 PfColor5        .dword $00300400
 PfColor6        .dword $000000e2
 PfColor7        .dword $00400000
-SprColor0       .dword $009b4884    ; cursor
-SprColor1       .dword $008aca61    ; arrow
-SprColor2       .dword $00ebd77e    ; maltese cross
+SprColor0       .dword $009b4884    ; player
+SprColor1       .dword $00df251c    ; star
+SprColor2       .dword $00ebd77e
 SprColor3       .dword $00610000
 SprColor4       .dword $00480800
 SprColor5       .dword $00002000
 SprColor6       .dword $00002020
 SprColor7       .dword $00201c00
-GrmnUnit        .dword $0053b8da    ; [11]
-FinnUnit        .dword $00d1d1d1    ; [12]
-ItlnUnit        .dword $00a6a4a5    ; [13]
-AxisUnit        .dword $0065c556    ; [14]
-RssnUnit        .dword $00745720    ; [15]
-Black           .dword $00000000    ; [16]
+GrmnUnit        .dword $0053b8da
+FinnUnit        .dword $00d1d1d1
+ItlnUnit        .dword $00a6a4a5
+AxisUnit        .dword $0065c556
+RssnUnit        .dword $00745720
+Black           .dword $00000000
                 .dword $00c20000
                 .dword $00612000
                 .dword $00a100a1

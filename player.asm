@@ -5,7 +5,7 @@ SpritesClear    .proc
                 lda #0
                 ldy #1
 _nextPage       ldx #0
-_next1          sta SPR_STAR,X
+_next1          ;--sta SPR_STAR,X
                 ;--sta SPR_PLAYER,X
                 dex
                 bne _next1

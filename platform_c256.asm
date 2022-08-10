@@ -174,7 +174,7 @@ InitSprites     .proc
                 lda #$00
                 sta zpSize+2
 
-                lda #<>Stamps         ; Set the source address
+                lda #<>Stamps           ; Set the source address
                 sta zpSource
                 lda #`Stamps
                 sta zpSource+2
@@ -197,9 +197,9 @@ InitSprites     .proc
 
                 .m16
                 lda #0
-                sta SP00_X_POS          ; star
+                sta SP00_X_POS          ; player
                 sta SP00_Y_POS
-                sta SP01_X_POS          ; player
+                sta SP01_X_POS          ; star
                 sta SP01_Y_POS
 
                 .m8

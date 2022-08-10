@@ -17,10 +17,12 @@ Search          .proc
                 sec
                 sbc #44
                 sta SX
+
                 lda StarVertPos
                 sec
                 sbc #13
                 sta SY
+
 _findcl         ldx D
                 lda SX
                 clc

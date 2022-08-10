@@ -87,6 +87,10 @@ LIVES           .byte 0
 
 ;--------------------------------------
 
+StarRotTbl      .word $0400,$0800
+                .addr $0C00,$1000
+                .addr $1400,$1800
+                .addr $1C00
 
 ;---------------------------
 ; STAR PLAYER-MISSILE IMAGES

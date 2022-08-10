@@ -398,40 +398,22 @@ _11             sta StarRotPos          ; save rot. pos.
 _12             ldy StarRotPos
                 ldx StarVertPos
 
-                ; lda #0
-                ; sta SPR_STAR-1,X
-                ; sta SPR_STAR+8,X
-
-                ; lda STARB1,Y
-                ; sta SPR_STAR,X
-
-                ; lda STARB2,Y
-                ; sta SPR_STAR+1,X
-
-                ; lda STARB3,Y
-                ; sta SPR_STAR+2,X
-
-                ; lda STARB4,Y
-                ; sta SPR_STAR+3,X
-
-                ; lda STARB5,Y
-                ; sta SPR_STAR+4,X
-
-                ; lda STARB6,Y
-                ; sta SPR_STAR+5,X
-
-                ; lda STARB7,Y
-                ; sta SPR_STAR+6,X
-
-                ; lda STARB8,Y
-                ; sta SPR_STAR+7,X
-
                 .m16
                 lda StarHorzPos         ; set star's horiz. pos.
-                sta SP00_X_POS
+                and #$FF
+                asl A
+                sta SP01_X_POS
 
                 lda StarVertPos         ; set star's vert. pos.
-                sta SP00_Y_POS
+                and #$FF
+                asl A
+                sta SP01_Y_POS
+
+                tya
+                asl A
+                tay
+                lda StarRotTbl,Y
+                sta SP01_ADDR
                 .m8
 
                 lda isHidePlayer        ; ok to show player?
@@ -439,30 +421,17 @@ _12             ldy StarRotPos
 
                 .m16
                 lda PX                  ; set player's horizontal position
+                and #$FF
                 clc
                 adc #47
-                sta SP01_X_POS
+                sta SP00_X_POS
 
                 lda PY                  ; draw player in player-1 memory
+                and #$FF
                 clc
                 adc #$10
-;                tax
-                and #$FF
-                sta SP01_Y_POS
+                sta SP00_Y_POS
                 .m8
-
-                ; lda #0
-                ; sta SPR_PLAYER-3,X
-                ; sta SPR_PLAYER-2,X
-                ; sta SPR_PLAYER+2,X
-                ; sta SPR_PLAYER+3,X
-
-                ; lda #$40
-                ; sta SPR_PLAYER-1,X
-                ; sta SPR_PLAYER+1,X
-
-                ; lda #$A0
-                ; sta SPR_PLAYER,X
 
                 lda isPreventColorChange ; color change ok?
                 bne _XIT                ;   no, exit VBI
