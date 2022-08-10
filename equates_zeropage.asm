@@ -2,30 +2,43 @@
 ; Zero-page Equates
 ;--------------------------------------
 
-LO              = $CB
-HI              = $CC
-PLOTX           = $CD
-PLOTY           = $CE
-LOHLD           = $CF
-HIHLD           = $D0
-vStarMoveTimer  = $D1
-vMoveTimer      = $D2
-TIMER           = $D3
-isDead          = $D4
-PX              = $D5
-PY              = $D6
-XI              = $D7
-YI              = $D8
+;--------------------------------------
+;--------------------------------------
+                * = $80
+;--------------------------------------
 
-JIFFYCLOCK      = $D9
-InputFlags      = $DA
-InputType       = $DB
-itJoystick  = 0
-itKeyboard  = 1
-KEYCHAR         = $DC                   ; last key pressed
-CONSOL          = $DD                   ; state of OPTION,SELECT,START
+LO                  .byte ?
+HI                  .byte ?
+PLOTX               .byte ?
+PLOTY               .byte ?
+LOHLD               .byte ?
+HIHLD               .byte ?
+vStarMoveTimer      .byte ?
+vMoveTimer          .byte ?
+TIMER               .byte ?
+isDead              .byte ?
+PX                  .byte ?
+PY                  .byte ?
+XI                  .byte ?
+YI                  .byte ?
 
-                * = $F0
-SOURCE          .dword ?                ; Starting address for the source data (4 bytes)
-DEST            .dword ?                ; Starting address for the destination block (4 bytes)
-SIZE            .dword ?                ; Number of bytes to copy (4 bytes)
+isGameOver          .byte ?
+
+JIFFYCLOCK          .byte ?
+InputFlags          .byte ?
+InputType           .byte ?
+itJoystick      = 0
+itKeyboard      = 1
+KEYCHAR             .byte ?             ; last key pressed
+CONSOL              .byte ?             ; state of OPTION,SELECT,START
+
+zpSource            .dword ?            ; Starting address for the source data (4 bytes)
+zpDest              .dword ?            ; Starting address for the destination block (4 bytes)
+zpSize              .dword ?            ; Number of bytes to copy (4 bytes)
+
+zpTemp1             .byte ?
+zpTemp2             .byte ?
+
+RND_MIN             .byte ?
+RND_SEC             .byte ?
+RND_RESULT          .word ?

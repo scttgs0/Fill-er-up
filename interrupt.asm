@@ -19,7 +19,7 @@ _1              lda @l INT_PENDING_REG0
                 cmp #FNX0_INT00_SOF
                 bne _XIT
 
-                jsl Interrupt_VBI
+                jsl VBIHandler
 
                 lda @l INT_PENDING_REG0
                 sta @l INT_PENDING_REG0
@@ -297,18 +297,27 @@ _XIT            .m16i16
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; VBI ROUTINE
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Interrupt_VBI   lda KEYCHAR
+VBIHandler      .proc
+                php
+
+                .m16i16
+                pha
+                phx
+                phy
+
+                .m8i8
+                lda KEYCHAR
                 cmp #$21                ; is spacebar?
                 bne _1                  ;   no, check for pause
 
                 lda #$FF                ; clear key code -- (processed)
                 sta KEYCHAR
 
-                lda PAUSE               ; toggle pause state
+                lda isPaused            ; toggle pause state
                 eor #$FF
-                sta PAUSE
+                sta isPaused
 
-_1              lda PAUSE               ; are we paused?
+_1              lda isPaused            ; are we paused?
                 beq _2                  ;   no!
 
                 rtl                     ; when paused, no VBI!
@@ -337,7 +346,7 @@ _4              lda isFillOn            ; are we filling?
 _5              lda #0                  ; clear out dead flag
                 sta isDead
 
-                ;lda P0PL               ; has player 0 hit player 3?
+                ;lda P0PL               ; has player 0 hit player 1?
                 ;and #$08
                 ;beq _6                 ;   no!
                 bra _6  ; HACK:
@@ -372,7 +381,7 @@ _9              lda vStarRotTimer       ; star rot. timer zero?
 _10             lda #1                  ; set rot. timer to 1
                 sta vStarRotTimer
 
-                lda vStarRotPosition    ; increment star rotation counter
+                lda StarRotPos          ; increment star rotation counter
                 clc
                 adc #1
 
@@ -380,74 +389,92 @@ _10             lda #1                  ; set rot. timer to 1
                 bne _11                 ; rot. count ok
 
                 lda #0                  ; zero rot. counter.
-_11             sta vStarRotPosition    ; save rot. pos.
+_11             sta StarRotPos          ; save rot. pos.
 
 
 ;   this section draws the star in player-0 memory
 ;   using the tables 'starb1' thru 'starb8'.
 
-_12             ldy vStarRotPosition
-                ldx vStarHeight
+_12             ldy StarRotPos
+                ldx StarVertPos
 
-                lda #0
-                sta SPR_STAR-1,X
-                sta SPR_STAR+8,X
+                ; lda #0
+                ; sta SPR_STAR-1,X
+                ; sta SPR_STAR+8,X
 
-                lda STARB1,Y
-                sta SPR_STAR,X
+                ; lda STARB1,Y
+                ; sta SPR_STAR,X
 
-                lda STARB2,Y
-                sta SPR_STAR+1,X
+                ; lda STARB2,Y
+                ; sta SPR_STAR+1,X
 
-                lda STARB3,Y
-                sta SPR_STAR+2,X
+                ; lda STARB3,Y
+                ; sta SPR_STAR+2,X
 
-                lda STARB4,Y
-                sta SPR_STAR+3,X
+                ; lda STARB4,Y
+                ; sta SPR_STAR+3,X
 
-                lda STARB5,Y
-                sta SPR_STAR+4,X
+                ; lda STARB5,Y
+                ; sta SPR_STAR+4,X
 
-                lda STARB6,Y
-                sta SPR_STAR+5,X
+                ; lda STARB6,Y
+                ; sta SPR_STAR+5,X
 
-                lda STARB7,Y
-                sta SPR_STAR+6,X
+                ; lda STARB7,Y
+                ; sta SPR_STAR+6,X
 
-                lda STARB8,Y
-                sta SPR_STAR+7,X
+                ; lda STARB8,Y
+                ; sta SPR_STAR+7,X
 
-                lda STRHOR              ; set star's horiz. pos.
+                .m16
+                lda StarHorzPos         ; set star's horiz. pos.
                 sta SP00_X_POS
 
-                lda SHOOFF              ; ok to show player?
+                lda StarVertPos         ; set star's vert. pos.
+                sta SP00_Y_POS
+                .m8
+
+                lda isHidePlayer        ; ok to show player?
                 bne _XIT                ;   no, exit VBI
 
+                .m16
                 lda PX                  ; set player's horizontal position
                 clc
                 adc #47
-                sta SP03_X_POS
+                sta SP01_X_POS
 
-                lda PY                  ; draw player in player-3 memory
+                lda PY                  ; draw player in player-1 memory
                 clc
                 adc #$10
-                tax
+;                tax
+                and #$FF
+                sta SP01_Y_POS
+                .m8
 
-                lda #0
-                sta SPR_PLAYER-3,X
-                sta SPR_PLAYER-2,X
-                sta SPR_PLAYER+2,X
-                sta SPR_PLAYER+3,X
+                ; lda #0
+                ; sta SPR_PLAYER-3,X
+                ; sta SPR_PLAYER-2,X
+                ; sta SPR_PLAYER+2,X
+                ; sta SPR_PLAYER+3,X
 
-                lda #$40
-                sta SPR_PLAYER-1,X
-                sta SPR_PLAYER+1,X
+                ; lda #$40
+                ; sta SPR_PLAYER-1,X
+                ; sta SPR_PLAYER+1,X
 
-                lda #$A0
-                sta SPR_PLAYER,X
+                ; lda #$A0
+                ; sta SPR_PLAYER,X
 
-                lda NOCCHG              ; color change ok?
+                lda isPreventColorChange ; color change ok?
                 bne _XIT                ;   no, exit VBI
 
                 ;inc COLPM3             ;   yes, cycle the color
-_XIT            rtl
+
+_XIT            .m16i16
+                ply
+                plx
+                pla
+
+                .m8i8
+                plp
+                rtl
+                .endproc

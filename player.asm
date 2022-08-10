@@ -3,18 +3,22 @@
 ;======================================
 SpritesClear    .proc
                 lda #0
-                ldx #127
-_next1          sta SPR_STAR,X ; HACK:
-                sta SPR_PLAYER,X
+                ldy #1
+_nextPage       ldx #0
+_next1          sta SPR_STAR,X
+                ;--sta SPR_PLAYER,X
                 dex
                 bne _next1
+
+                dey
+                bpl _nextPage
 
                 rts
                 .endproc
 
 
 ;======================================
-; PLOT ADDRESS CALCULATOR
+; Plot address calculator
 ;--------------------------------------
 ; multiply PLOTY by 40, then calculate
 ; address of the screen memory to be
@@ -24,43 +28,55 @@ PlotCalc        .proc
                 lda PLOTY
                 asl A
                 sta LO
+
                 lda #0
                 sta HI                  ; *2
+
                 asl LO
                 rol HI                  ; *4
+
                 asl LO
                 lda LO
                 sta LOHLD
+
                 rol HI                  ; *8
                 lda HI
                 sta HIHLD
+
                 asl LO
                 rol HI                  ; *16
                 asl LO
                 rol HI                  ; *32
+
                 lda LO
                 clc
                 adc LOHLD
                 sta LO
+
                 lda HI
                 adc HIHLD
                 sta HI                  ; +*8=*40
+
                 lda #<DISP
                 clc
                 adc LO
                 sta LO
+
                 lda #>DISP
                 adc HI
                 sta HI                  ; +display start
+
                 lda PLOTX               ; mask x position
                 and #3
                 tax
+
                 lda PLOTX
                 lsr A
                 lsr A
                 clc
                 adc LO
                 sta LO
+
                 lda HI
                 adc #0                  ; lo & hi now hold
                 sta HI                  ; the address!
@@ -69,19 +85,18 @@ PlotCalc        .proc
 
 
 ;--------------------------------------
-; CLEAR THE DISPLAY MEMORY
+; Clear the display memory
 ;--------------------------------------
 ClearDisplay    .proc
-                ldx #0                  ; this routine will
-                stx PLOTX               ; clear the screen ram.
-                ldx #0                  ; it gets the address
+                ldx #0                  ; this routine will clear the screen ram.
+                stx PLOTX               ; it gets the address
 _next1          stx PLOTY               ; of the beginning of
                 jsr PlotCalc            ; each gr.7 line
 
-                ldx PLOTY               ; then zeroes out
-                lda #$00                ; each of the
-                ldy #39                 ; 40 bytes (0-39)
-_next2          sta (LO),Y              ; in the line.
+                ldx PLOTY               ; then zeroes out each of the
+                lda #$00                ; 40 bytes (0-39) in the line.
+                ldy #39     ; TODO:
+_next2          sta (LO),Y
                 dey
                 bpl _next2
 
@@ -89,9 +104,9 @@ _next2          sta (LO),Y              ; in the line.
                 cpx #86
                 bne _next1
 
-;
+; -----------------------
 ; Draw the color 1 border
-;
+; -----------------------
                 lda #3                  ; this routine
                 sta BORNUM              ; draws the 4 lines
 _border         ldx BORNUM              ; that make up the
@@ -136,9 +151,10 @@ _drawln         jsr PlotCalc
                 clc                     ; level number
                 adc #1
                 sta LOWK
-                lda #0                  ; zero out
-                sta CURLO               ; current tally
-                sta CURHI               ; work area
+
+                lda #0                  ; zero out current
+                sta CurrentLO           ; tally work area
+                sta CurrentHI
                 sta HIWK
                 lda #$FF                ; tell decimal converter
                 sta SLLOC               ; not to place result
@@ -152,12 +168,12 @@ _drawln         jsr PlotCalc
                 sta panelLevel+1        ; digit
 
                 ldx LEVEL               ; get this level's
-                lda TGTLO,X             ; parameters
+                lda TargetLO,X          ; parameters
                 sta LOWK
-                lda TGTHI,X
+                lda TargetHI,X
                 sta HIWK
                 lda STARSP,X
-                sta STRSPD
+                sta StarSpeed
                 lda #4
                 sta SLLOC
                 jsr ConvertDecimal      ; show target amount
@@ -170,7 +186,7 @@ _drawln         jsr PlotCalc
 ;--------------------------------------
 ClearTrackTbl   .proc
                 lda #0
-                sta SHOOFF
+                sta isHidePlayer
                 tax
 _next1          sta DIR,X               ; clear direction
                 sta LGTH,X              ; and length entries
@@ -178,7 +194,7 @@ _next1          sta DIR,X               ; clear direction
                 bne _next1
 
                 sta MOVIX               ; clear movement index
-                sta DRAWFG              ; and draw flag
+                sta isDrawActive        ; and draw flag
 
                 .endproc
 
@@ -187,8 +203,8 @@ _next1          sta DIR,X               ; clear direction
 ;
 ;--------------------------------------
 GetStick        .proc
-                lda PAUSE               ; game paused?
-                bne GetStick            ; yes, loop and wait.
+_wait1          lda isPaused            ; game paused?
+                bne _wait1              ;   yes, loop and wait.
 
                 lda #$FD                ; do 'warble' sound
                 sta SID_FREQ1           ; using sound
@@ -207,26 +223,26 @@ GetStick        .proc
 
                 ldx LEVEL               ; it hit us--
                 lda KILLFG,X            ; unconditional kill?
-                bne _jcrsh              ; yes! we're dead!!!
+                bne _jcrsh              ;   yes! we're dead!!!
 
-                lda PX                  ; no, if we're on a
+                lda PX                  ;   no, if we're on a
                 sta PLOTX               ; white line (color 1)
                 lda PY                  ; then we're alive!
                 sta PLOTY
                 jsr PlotCalc
 
                 ldy #0
-                lda BITSON,X
+                lda BitsOn,X
                 and (LO),Y
                 cmp COLOR1,X            ; on color 1?
-                beq _alive              ; yes (whew!)
+                beq _alive              ;   yes (whew!)
 
 _jcrsh          jmp Crash               ; go kill player.
 
 _alive          lda vMoveTimer          ; player moving?
-                beq _gotstk             ; yes--get stick.
+                beq _gotstk             ;   yes--get stick.
 
-                jmp MoveStar            ; no, move star.
+                jmp MoveStar            ;   no, move star.
 
 _jgstk          jmp GetStick            ; go get stick
 
@@ -244,16 +260,16 @@ _gotstk         lda #4                  ; set up the
                 adc YD,X
                 sta YI
                 ora XI                  ; any movement?
-                beq _jgstk              ; no, try again.
+                beq _jgstk              ;   no, try again.
 
                 lda PX                  ; increment
                 clc                     ; player x
                 adc XI                  ; position and
                 sta CKX                 ; hold it...
                 cmp #159                ; offscreen?
-                bcs _jgstk              ; yes!
+                bcs _jgstk              ;   yes!
 
-                sta PLOTX               ; no, save it
+                sta PLOTX               ;   no, save it
                 sec
                 sbc XD,X
                 sta PXWC
@@ -262,16 +278,16 @@ _gotstk         lda #4                  ; set up the
                 adc YI                  ; position and
                 sta CKY                 ; hold it...
                 cmp #85                 ; offscreen?
-                bcs _jgstk              ; yes!
+                bcs _jgstk              ;   yes!
 
-                sta PLOTY               ; no, save it
+                sta PLOTY               ;   no, save it
                 sec
                 sbc YD,X
                 sta PYWC
                 jsr PlotCalc            ; locate new player
 
                 ldy #0                  ; position.
-                lda BITSON,X
+                lda BitsOn,X
                 and (LO),Y
                 sta CKV                 ; save the 'locate'.
                 stx CKVX
@@ -282,26 +298,26 @@ _gotstk         lda #4                  ; set up the
                 jsr PlotCalc
 
                 ldy #0
-                lda BITSON,X
+                lda BitsOn,X
                 and (LO),Y
                 pha                     ; and save it!
                 lda JOYSTICK0           ; trigger pressed?
                 and #$10
-                bne _notdrn             ; no!
+                bne _notdrn             ;   no!
 
                 pla                     ; ok to draw?
-                bne _repeat             ; no!!
+                bne _repeat             ;   no!!
 
-                jmp DrawFunc            ; yes, go draw.
+                jmp DrawFunc            ;   yes, go draw.
 
 _notdrn         pla                     ; not drawing--are we
                 cmp COLOR1,X            ; on color 1?
-                bne _repeat             ; no, try again
+                bne _repeat             ;   no, try again
 
                 lda CKV                 ; are we moving
                 ldx CKVX                ; onto another
                 cmp COLOR1,X            ; color 1?
-                bne _repeat             ; no! try again.
+                bne _repeat             ;   no! try again.
 
                 lda CKX                 ; all's well...
                 sta PX                  ; update px
@@ -316,15 +332,17 @@ _repeat         jmp GetStick            ; get stick.
 ; THIS HANDLES THE DRAW FUNCTION.
 ;-------------------------------------
 DrawFunc        .proc
-                lda DRAWFG              ; already drawing?
-                bne _drawok             ; yes!
+                lda isDrawActive        ; already drawing?
+                bne _drawok             ;   yes!
 
-                sta MOVIX               ; no, this is the
-                lda STKHLD              ; first time--set up
-                sta DIR                 ; initial drawing
-                lda #1                  ; variables.
-                sta DRAWFG
-                sta HASDRN
+                sta MOVIX               ;   no, this is the first time--
+                lda STKHLD              ; set up initial drawing variables.
+                sta DIR
+
+                lda #TRUE
+                sta isDrawActive
+                sta hasDrawn
+
                 lda PX
                 sta INIX
                 sta MINX
@@ -336,16 +354,16 @@ DrawFunc        .proc
 _drawok         lda CKV                 ; did we
                 ldx CKVX                ; run into another
                 cmp COLOR2,X            ; color 2?
-                bne _nocrash            ; no, we're ok.
+                bne _nocrash            ;   no, we're ok.
 
                 jmp Crash               ; crraaassshhh!
 
-_nocrash        ldx MOVIX               ; update the
-                lda STKHLD              ; tracking
-                cmp DIR,X               ; tables with
-                beq _samdir             ; direction
+_nocrash        ldx MOVIX               ; update the tracking
+                lda STKHLD              ; tables with direction
+                cmp DIR,X               ; information.
+                beq _samdir
 
-                inc MOVIX               ; information.
+                inc MOVIX
                 inx
                 sta DIR,X
                 lda #0
@@ -361,7 +379,7 @@ _ccloop         jsr PlotCalc
 
                 ldy #0
                 lda (LO),Y
-                and BITOFF,X
+                and BitsOff,X
                 ora COLOR2,X            ; in color 2.
                 sta (LO),Y
                 dec BDCNT
@@ -384,10 +402,10 @@ _ckcolr         lda PLOTX               ; update x pos.
                 cmp MAXX                ; check minimum
                 bcc _tminx              ; and maximum
 
-                sta MAXX                ; x & y values
-                jmp _chkymm             ; and update if
+                sta MAXX                ; x & y values and
+                jmp _chkymm             ; update if necessary
 
-_tminx          cmp MINX                ; necessary
+_tminx          cmp MINX
                 bcs _chkymm
 
                 sta MINX
@@ -406,17 +424,17 @@ _tminy          cmp MINY
 _endmm          ldx CKVX                ; did we draw
                 lda CKV                 ; into
                 cmp COLOR1,X            ; color 1?
-                beq _endlin             ; yes! end of line!
+                beq _endlin             ;   yes! end of line!
 
-                jmp GetStick            ; no, go get stick.
+                jmp GetStick            ;   no, go get stick.
 
-_endlin         lda #0                  ; we aren't
-                sta DRAWFG              ; drawing anymore
+_endlin         lda #FALSE              ; we aren't
+                sta isDrawActive        ; drawing anymore
                 jsr Search              ; search and fill!!
 
-                lda CURLO               ; get current value
+                lda CurrentLO           ; get current value
                 sta LOWK
-                lda CURHI
+                lda CurrentHI
                 sta HIWK
                 lda #15                 ; put at 15th
                 sta SLLOC               ; pos. in scoreline1
@@ -426,23 +444,23 @@ _endlin         lda #0                  ; we aren't
                 sta RDRCOL              ; player's path in
                 jsr Redraw              ; color 1 (white).
 
-                ldx LEVEL               ; check to see
-                lda CURLO               ; if we've hit
-                sec                     ; the target.
-                sbc TGTLO,X
+                ldx LEVEL               ; check to see if we've
+                lda CurrentLO           ; hit the target.
+                sec
+                sbc TargetLO,X
                 sta LOWK
-                lda CURHI
-                sbc TGTHI,X
+                lda CurrentHI
+                sbc TargetHI,X
                 sta HIWK                ; hit target?
-                bpl _newlvl             ; yes--new level!
+                bpl _newlvl             ;   yes--new level!
 
-                jmp ClearTrackTbl       ; no, go clear track
+                jmp ClearTrackTbl       ;   no, go clear track
 
-_newlvl         lda LEVEL               ; if level < 15
-                cmp #15                 ; then
-                beq _nolinc             ; increment
+_newlvl         lda LEVEL               ; if level < 15 then
+                cmp #15
+                beq _nolinc
 
-                inc LEVEL               ; level
+                inc LEVEL               ; increment level
 
 ;
 ; INCREASE SCORE HERE
@@ -479,16 +497,16 @@ _shslp          lda SCORE,X             ; score in
                 dex
                 bpl _shslp
 
-                lda #1                  ; stop VBI for a moment
+                lda #TRUE               ; stop VBI for a moment
                 sta isFillOn
-                sta SHOOFF
+                sta isHidePlayer
 
                 jsr SpritesClear        ; clear p/m area
 
                 lda #64                 ; initialize the star position
-                sta vStarHeight
+                sta StarVertPos
                 lda #128
-                sta STRHOR
+                sta StarHorzPos
 
                 lda #0                  ; VBI on again
                 sta isFillOn
@@ -507,8 +525,9 @@ Crash           .proc
                 sta SID_CTRL2
                 sta SID_CTRL3
 
-                lda #1                  ; no player color
-                sta NOCCHG              ; change in vbi
+                lda #TRUE               ; no player color
+                sta isPreventColorChange ; change in vbi
+
                 lda #15                 ; set brightness of
                 sta DEDBRT              ; player death.
 _timrst         lda #5                  ; set death timer
@@ -516,11 +535,11 @@ _timrst         lda #5                  ; set death timer
 _deadcc         lda DEDBRT              ; move brightness
                 sta SID_CTRL1           ; to death sound volume ; volume=variable, distortion=0
 
-                lda SID_RANDOM          ; get random
+                .randomByte
                 and #$1F                ; death sound
                 sta SID_FREQ1           ; frequency
 
-                lda SID_RANDOM          ; get random
+                .randomByte
                 and #$F0                ; death color
                 ora DEDBRT              ; add brite
                 ;sta COLPF1             ; put in line color
@@ -540,10 +559,8 @@ _deadcc         lda DEDBRT              ; move brightness
                 bne RandomLocation      ; no!
 
 ;   we're completely dead, show 'game over' message
-                lda #<GameOver
-                sta SCDL+1
-                lda #>GameOver
-                sta SCDL+2
+                lda #TRUE
+                sta isGameOver
                 jsr RenderPanel
 
 _ckstrt         lda CONSOL              ; wait for start
@@ -555,10 +572,8 @@ _releas         lda CONSOL              ; key pressed, now
                 beq _releas             ;   not released yet!
 
 ;   put the normal score line back (replace 'game over')
-                lda #<ScoreLine1
-                sta SCDL+1
-                lda #>ScoreLine1
-                sta SCDL+2
+                lda #FALSE
+                sta isGameOver
                 jsr RenderPanel
 
                 jmp START               ; and start game!
@@ -572,14 +587,14 @@ _releas         lda CONSOL              ; key pressed, now
 ;--------------------------------------
 RandomLocation  .proc
                 lda #1                  ; don't show
-                sta SHOOFF              ; player
-_newloc         lda SID_RANDOM          ; get random x
+                sta isHidePlayer              ; player
+_newloc         .randomByte             ; get random x
                 and #$FE                ; must be even
                 cmp #159                ; and on screen
                 bcs _newloc
 
                 sta PLOTX
-_cshy           lda SID_RANDOM          ; get random y
+_cshy           .randomByte             ; get random y
                 and #$7E                ; must be even
                 cmp #85                 ; and on screen
                 bcs _cshy
@@ -588,10 +603,10 @@ _cshy           lda SID_RANDOM          ; get random y
                 jsr PlotCalc
 
                 ldy #0
-                lda BITSON,X
+                lda BitsOn,X
                 and (LO),Y              ; is location on
                 cmp COLOR1,X            ; color 1?
-                bne _newloc             ; no, try again.
+                bne _newloc             ;   no, try again.
 
                 jsr SpritesClear        ; it's ok, clear p/m
 
@@ -599,9 +614,10 @@ _cshy           lda SID_RANDOM          ; get random y
                 sta PX                  ; the player's
                 lda PLOTY               ; new
                 sta PY                  ; coordinates.
-                lda #0                  ; redraw the
+
+                lda #FALSE              ; redraw the
                 sta RDRCOL              ; player's track
-                lda HASDRN              ; in color 0
+                lda hasDrawn            ; in color 0
                 beq _jctrk
 
                 jsr Redraw
@@ -613,17 +629,18 @@ _cshy           lda SID_RANDOM          ; get random y
                 jsr PlotCalc            ; the player's track
 
                 ldy #0                  ; after it is erased.
-                lda BITOFF,X            ; (nobody's perfect!)
+                lda BitsOff,X           ; (nobody's perfect!)
                 and (LO),Y
                 ora COLOR1,X
                 sta (LO),Y
 _jctrk          ;lda #$24               ; restore draw line
                 ;sta COLPF1             ; color
 
-                lda #0
-                sta NOCCHG
+                lda #FALSE
+                sta isPreventColorChange
                 ;sta HITCLR             ; clear collisions
                 sta isDead
+
                 jmp ClearTrackTbl       ; and go start new track.
 
                 .endproc
@@ -663,16 +680,16 @@ _times3         lda REX
                 lda RDRCOL
                 bne _rdc1
 
-                lda BITOFF,X
+                lda BitsOff,X
                 and (LO),Y
                 sta (LO),Y
                 jmp _setnrp
 
-_endrd          lda #0
-                sta DRAWFG
+_endrd          lda #FALSE
+                sta isDrawActive
                 rts
 
-_rdc1           lda BITOFF,X
+_rdc1           lda BitsOff,X
                 and (LO),Y
                 ora COLOR1,X
                 sta (LO),Y

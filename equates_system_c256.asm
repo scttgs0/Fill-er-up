@@ -122,6 +122,13 @@ C256F_MODEL_MINOR       = $AF_070C
 
 ;---------------------------------------
 
+RTC_SEC                 = $AF_0800      ; Seconds Register
+RTC_MIN                 = $AF_0802      ; Minutes Register
+RTC_HRS                 = $AF_0804      ; Hours Register
+RTC_DAY                 = $AF_0806      ; Day Register
+
+;---------------------------------------
+
 SP00_CTRL               = $AF_0C00
 scEnable            = $01
 
@@ -173,6 +180,7 @@ BG_CHAR_LUT_PTR		    = $AF_1F80      ; 16 entries = ARGB
 ;---------------------------------------
 
 GRPH_LUT0_PTR	        = $AF_2000
+GRPH_LUT1_PTR	        = $AF_2400
 
 ;---------------------------------------
 
@@ -181,10 +189,10 @@ CS_TEXT_MEM_PTR         = $AF_A000      ; ascii code for text character
 CS_COLOR_MEM_PTR        = $AF_C000      ; HiNibble = Foreground; LoNibble = Background
                                         ; 0-15 = index into the CHAR_LUT tables
 
-COLS_VISIBLE            = $00_000F      ;2 Bytes Columns visible per screen line. A virtual line can be longer than displayed, up to COLS_PER_LINE long. Default = 80
-COLS_PER_LINE           = $00_0011      ;2 Bytes Columns in memory per screen line. A virtual line can be this long. Default=128
-LINES_VISIBLE           = $00_0013      ;2 Bytes The number of rows visible on the screen. Default=25
-LINES_MAX               = $00_0015      ;2 Bytes The number of rows in memory for the screen. Default=64
+COLS_VISIBLE            = $00_000F      ; 2-byte Columns visible per screen line. A virtual line can be longer than displayed, up to COLS_PER_LINE long. Default = 80
+COLS_PER_LINE           = $00_0011      ; 2-byte Columns in memory per screen line. A virtual line can be this long. Default=128
+LINES_VISIBLE           = $00_0013      ; 2-byte The number of rows visible on the screen. Default=25
+LINES_MAX               = $00_0015      ; 2-byte The number of rows in memory for the screen. Default=64
 
 ;---------------------------------------
 
@@ -224,6 +232,8 @@ JOYSTICK0               = $AF_E800      ; (R) Joystick 0
                                         ;      1001   |   0101
                                         ;           1101
 
+JOYSTICK1               = $AF_E801
+
 LUTBkColor      = 0
 LUTPfColor0     = 1
 LUTPfColor1     = 2
@@ -241,3 +251,18 @@ LUTSprColor4    = 13
 LUTSprColor5    = 14
 LUTSprColor6    = 15
 LUTSprColor7    = 16
+
+;--------------------------------------
+
+; READ
+GABE_RNG_DAT_LO         = $AF_E884      ; Low Part of 16Bit RNG Generator
+GABE_RNG_DAT_HI         = $AF_E885      ; Hi Part of 16Bit RNG Generator
+
+; WRITE
+GABE_RNG_SEED_LO        = $AF_E884      ; Low Part of 16Bit RNG Generator
+GABE_RNG_SEED_HI        = $AF_E885      ; Hi Part of 16Bit RNG Generator
+
+; WRITE
+GABE_RNG_CTRL           = $AF_E886
+grcEnable       = $01                   ; Enable the LFSR BLOCK_LEN
+grcDV           = $02                   ; After Setting the Seed Value, Toggle that Bit for it be registered

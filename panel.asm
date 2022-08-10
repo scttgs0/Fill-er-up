@@ -87,8 +87,18 @@ _nextChar       inx
                 cpy #$28
                 beq _XIT
 
-                lda ScoreLine1,Y
-                cmp #$20
+                cpy #$14
+                bcs _normal
+
+                lda isGameOver
+                beq _normal
+
+                lda GameOver,Y
+                bra _cont
+
+_normal         lda ScoreLine1,Y
+
+_cont           cmp #$20
                 beq _space
 
                 cmp #$41

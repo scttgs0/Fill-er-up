@@ -1,11 +1,57 @@
 VRAM            = $B00000               ; First byte of video RAM
 
-SPRITES         = VRAM+20000
-BITMAP          = $B30000
-BITMAPTXT0      = $B6F200
-BITMAPTXT1      = $B71A00
-BITMAPTXT2      = $B74C00
-BITMAPTXT3      = $B31400
+SPRITES         = VRAM
+BITMAP          = VRAM+$1000
+
+
+
+;======================================
+; seed = elapsed seconds this hour
+;======================================
+Random_Seed     .proc
+                .m8
+                lda RTC_MIN
+                sta RND_MIN
+                lda RTC_SEC
+                sta RND_SEC
+
+                .m16
+;   elapsed minutes * 60
+                lda RND_MIN
+                asl A
+                asl A
+                pha
+                asl A
+                pha
+                asl A
+                pha
+                asl A
+                sta RND_RESULT      ; *32
+                pla
+                clc
+                adc RND_RESULT      ; *16
+                sta RND_RESULT
+                pla
+                clc
+                adc RND_RESULT      ; *8
+                sta RND_RESULT
+                pla
+                clc
+                adc RND_RESULT      ; *4
+                sta RND_RESULT
+
+;   + elapsed seconds
+                lda RND_SEC
+                adc RND_RESULT
+
+                sta GABE_RNG_SEED_LO
+
+                .m8
+                lda #grcEnable|grcDV
+                sta GABE_RNG_CTRL
+                lda #grcEnable
+                sta GABE_RNG_CTRL
+                .endproc
 
 
 ;======================================
@@ -114,155 +160,6 @@ Custom_LUT      .dword $00282828        ; 0: Dark Jungle Green  [Editor Text bg]
 
 
 ;======================================
-; Load the tiles into VRAM
-;======================================
-InitTiles       .proc
-                php
-                phb
-
-                .m16i16
-                lda #$FFFF              ; Set the size
-                sta SIZE
-                lda #$00
-                sta SIZE+2
-
-                lda #<>tiles            ; Set the source address
-                sta SOURCE
-                lda #`tiles
-                sta SOURCE+2
-
-                lda #<>(TILESET-VRAM)   ; Set the destination address
-                sta DEST
-                sta TILESET0_ADDR       ; And set the Vicky register
-                lda #`(TILESET-VRAM)
-                sta DEST+2
-                .m8
-                sta TILESET0_ADDR+2
-
-                jsr Copy2VRAM
-
-                ; set tileset layout to linear-vertical (16x4096)
-                .m8
-                lda #tclVertical
-                sta TILESET0_ADDR_CFG
-
-                plb
-                plp
-                rts
-                .endproc
-
-
-;======================================
-; Initialize the Title Screen layer
-;======================================
-InitTitleScreen .proc
-                php
-                phb
-
-                jsr RefreshTitleScreen
-
-                .m16
-                lda #<>(TILEMAP-VRAM)   ; Set the pointer to the tile map
-                sta TILE3_START_ADDR
-                .m8
-                lda #`(TILEMAP-VRAM)
-                sta TILE3_START_ADDR+2
-
-                .m16
-                lda #MAPWIDTH                ; Set the size of the tile map
-                sta TILE3_X_SIZE
-                lda #MAPHEIGHT
-                sta TILE3_Y_SIZE
-
-                lda #$00
-                sta TILE3_WINDOW_X_POS
-                sta TILE3_WINDOW_Y_POS
-
-                .m8
-                lda #tcEnable           ; Enable the tileset, LUT0
-                sta TILE3_CTRL
-
-                plb
-                plp
-                rts
-                .endproc
-
-
-;======================================
-;
-;======================================
-RefreshTitleScreen .proc
-                php
-                .setbank `TitleScreenData
-
-                .m8i16
-                ldx #0
-                ldy #0
-_nextTile       lda TitleScreenData,Y   ; Get the tile code
-                and #$7F
-                sta TILEMAP,X           ; save it to the tile map
-                inx                     ; Note: writes to video RAM need to be 8-bit only
-                lda #0
-                sta TILEMAP,X
-
-                inx                     ; move to the next tile
-                iny
-                cpy #MAPWIDTH*18        ; top 18 lines are graphic
-                bne _nextTile
-
-_nextGlyph      lda TitleScreenData,Y   ; Get the tile code
-                ora #$80
-                sta TILEMAP,X           ; save it to the tile map
-                inx                     ; Note: writes to video RAM need to be 8-bit only
-                lda #0
-                sta TILEMAP,X
-
-                inx                     ; move to the next tile
-                iny
-                cpy #MAPWIDTH*MAPHEIGHT-18  ; bottom lines are text
-                bne _nextGlyph
-
-                .setbank $00
-                plp
-                rts
-                .endproc
-
-
-;======================================
-; Initialize the Unit layer (troops)
-;======================================
-InitUnitOverlay .proc
-                php
-
-                jsr RefreshUnitOverlay
-
-                .m16
-                lda #<>(TILEMAPUNITS-VRAM)   ; Set the pointer to the tile map
-                sta TILE2_START_ADDR
-                .m8
-                lda #`(TILEMAPUNITS-VRAM)
-                sta TILE2_START_ADDR+2
-
-                .m16
-                lda #MAPWIDTH           ; Set the size of the tile map
-                sta TILE2_X_SIZE
-                lda #MAPHEIGHT
-                sta TILE2_Y_SIZE
-
-                lda #$00
-                sta TILE2_WINDOW_X_POS
-                sta TILE2_WINDOW_Y_POS
-
-                .m8
-                lda #tcEnable           ; Enable the tileset, LUT0
-                sta TILE2_CTRL
-
-                plp
-                rts
-                .endproc
-
-
-;======================================
 ; Initialize the Sprite layer
 ;--------------------------------------
 ; sprites dimensions are 32x32 (1024)
@@ -272,25 +169,25 @@ InitSprites     .proc
                 phb
 
                 .m16i16
-                lda #$800               ; Set the size
-                sta SIZE
+                lda #Stamps_end-Stamps  ; Set the size
+                sta zpSize
                 lda #$00
-                sta SIZE+2
+                sta zpSize+2
 
-                lda #<>SPR_STAR         ; Set the source address
-                sta SOURCE
-                lda #`SPR_STAR
-                sta SOURCE+2
+                lda #<>Stamps         ; Set the source address
+                sta zpSource
+                lda #`Stamps
+                sta zpSource+2
 
                 lda #<>(SPRITES-VRAM)   ; Set the destination address
-                sta DEST
+                sta zpDest
                 sta SP00_ADDR           ; And set the Vicky register
                 clc
                 adc #$400               ; 1024
                 sta SP01_ADDR
 
                 lda #`(SPRITES-VRAM)
-                sta DEST+2
+                sta zpDest+2
 
                 .m8
                 sta SP00_ADDR+2
@@ -299,11 +196,10 @@ InitSprites     .proc
                 jsr Copy2VRAM
 
                 .m16
-                lda #20
-                sta SP00_X_POS
+                lda #0
+                sta SP00_X_POS          ; star
                 sta SP00_Y_POS
-                lda #40
-                sta SP01_X_POS
+                sta SP01_X_POS          ; player
                 sta SP01_Y_POS
 
                 .m8
@@ -326,21 +222,21 @@ InitBitmap      .proc
 
                 .m16i16
                 lda #$B000              ; Set the size
-                sta SIZE
+                sta zpSize
                 lda #$04
-                sta SIZE+2
+                sta zpSize+2
 
                 lda #<>HeaderPanel      ; Set the source address
-                sta SOURCE
+                sta zpSource
                 lda #`HeaderPanel
-                sta SOURCE+2
+                sta zpSource+2
 
                 lda #<>(BITMAP-VRAM)   ; Set the destination address
-                sta DEST
+                sta zpDest
                 sta BITMAP0_START_ADDR ; And set the Vicky register
 
                 lda #`(BITMAP-VRAM)
-                sta DEST+2
+                sta zpDest+2
 
                 .m8
                 sta BITMAP0_START_ADDR+2
@@ -357,41 +253,104 @@ InitBitmap      .proc
 
 
 ;======================================
-; Clear the visible screen
+; Clear the play area of the screen
 ;======================================
 ClearScreen     .proc
 v_QtyPages      .var $04                ; 40x30 = $4B0... 4 pages + 176 bytes
+                                        ; remaining 176 bytes cleared via ClearGamePanel
 
-v_Empty         .var $00
+v_EmptyText     .var $00
 v_TextColor     .var $40
 ;---
 
                 php
-                .m16i8
+                .m8i8
 
-;   reset the addresses to make this reentrant
-                lda #<>CS_TEXT_MEM_PTR
-                sta _setAddr1+1
-                lda #<>CS_COLOR_MEM_PTR
-                sta _setAddr2+1
+;   clear color
+                lda #<CS_COLOR_MEM_PTR
+                sta zpDest
+                lda #>CS_COLOR_MEM_PTR
+                sta zpDest+1
+                lda #`CS_COLOR_MEM_PTR
+                sta zpDest+2
 
-                .m8
-                ldx #$00
-                ldy #v_QtyPages
+                ldx #v_QtyPages
+                lda #v_TextColor
+_nextPageC      ldy #$00
+_next1C         sta [zpDest],Y
 
-_clearNext      lda #v_Empty
-_setAddr1       sta CS_TEXT_MEM_PTR,x   ; SMC
+                iny
+                bne _next1C
+
+                inc zpDest+1            ; advance to next memory page
+                dex
+                bne _nextPageC
+
+;   clear text
+                lda #<CS_TEXT_MEM_PTR
+                sta zpDest
+                lda #>CS_TEXT_MEM_PTR
+                sta zpDest+1
+                lda #`CS_TEXT_MEM_PTR
+                sta zpDest+2
+
+                ldx #v_QtyPages
+                lda #v_EmptyText
+_nextPageT      ldy #$00
+_next1T         sta [zpDest],Y
+
+                iny
+                bne _next1T
+
+                inc zpDest+1            ; advance to next memory page
+                dex
+                bne _nextPageT
+
+                plp
+                rts
+                .endproc
+
+
+;======================================
+; Clear the bottom of the screen
+;======================================
+ClearGamePanel  .proc
+v_EmptyText     .var $00
+v_TextColor     .var $40
+;---
+
+                php
+                .m8i8
+
+                lda #<CS_COLOR_MEM_PTR+24*CharResX
+                sta zpDest
+                lda #>CS_COLOR_MEM_PTR+24*CharResX
+                sta zpDest+1
+                lda #`CS_COLOR_MEM_PTR+24*CharResX
+                sta zpDest+2
 
                 lda #v_TextColor
-_setAddr2       sta CS_COLOR_MEM_PTR,x  ; SMC
+                ldy #$00
+_next1          sta [zpDest],Y
 
-                inx
-                bne _clearNext
+                iny
+                cpy #$F0                ; 6 lines
+                bne _next1
 
-                inc _setAddr1+2         ; advance to next memory page
-                inc _setAddr2+2         ; advance to next memory page
-                dey
-                bne _clearNext
+                lda #<CS_TEXT_MEM_PTR+24*CharResX
+                sta zpDest
+                lda #>CS_TEXT_MEM_PTR+24*CharResX
+                sta zpDest+1
+                lda #`CS_TEXT_MEM_PTR+24*CharResX
+                sta zpDest+2
+
+                lda #v_EmptyText
+                ldy #$00
+_next2          sta [zpDest],Y
+
+                iny
+                cpy #$F0                ; 6 lines
+                bne _next2
 
                 plp
                 rts
@@ -402,7 +361,7 @@ _setAddr2       sta CS_COLOR_MEM_PTR,x  ; SMC
 ; Blit bitmap text to VRAM
 ;--------------------------------------
 ; on entry:
-;   DEST        set by caller
+;   zpDest      set by caller
 ;======================================
 BlitText        .proc
                 php
@@ -410,14 +369,14 @@ BlitText        .proc
                 .m16i16
 
                 lda #640*16             ; Set the size
-                sta SIZE
+                sta zpSize
                 lda #$00
-                sta SIZE+2
+                sta zpSize+2
 
                 lda #<>Text2Bitmap      ; Set the source address
-                sta SOURCE
+                sta zpSource
                 lda #`Text2Bitmap
-                sta SOURCE+2
+                sta zpSource+2
 
                 jsr Copy2VRAM
 
@@ -431,9 +390,9 @@ BlitText        .proc
 ; Copying data from system RAM to VRAM
 ;--------------------------------------
 ; Inputs (pushed to stack, listed top down)
-;   SOURCE = address of source data (should be system RAM)
-;   DEST = address of destination (should be in video RAM)
-;   SIZE = number of bytes to transfer
+;   zpSource = address of source data (should be system RAM)
+;   zpDest = address of destination (should be in video RAM)
+;   zpSize = number of bytes to transfer
 ;
 ; Outputs:
 ;   None
@@ -441,7 +400,7 @@ BlitText        .proc
 Copy2VRAM       .proc
                 php
                 .setbank `SDMA_SRC_ADDR
-                .setdp SOURCE
+                .setdp zpSource
                 .m8
 
     ; Set SDMA to go from system to video RAM, 1D copy
@@ -453,21 +412,21 @@ Copy2VRAM       .proc
                 sta VDMA_CTRL
 
                 .m16i8
-                lda SOURCE              ; Set the source address
+                lda zpSource            ; Set the source address
                 sta SDMA_SRC_ADDR
-                ldx SOURCE+2
+                ldx zpSource+2
                 stx SDMA_SRC_ADDR+2
 
-                lda DEST                ; Set the destination address
+                lda zpDest              ; Set the destination address
                 sta VDMA_DST_ADDR
-                ldx DEST+2
+                ldx zpDest+2
                 stx VDMA_DST_ADDR+2
 
                 .m16
-                lda SIZE                ; Set the size of the block
+                lda zpSize              ; Set the size of the block
                 sta SDMA_SIZE
                 sta VDMA_SIZE
-                lda SIZE+2
+                lda zpSize+2
                 sta SDMA_SIZE+2
                 sta VDMA_SIZE+2
 
@@ -526,7 +485,7 @@ _relocate       ;lda @l $024000,X        ; HandleIrq address
                 ;lda @l vecIRQ
                 ;sta IRQ_PRIOR
 
-                lda #<>$002900
+                lda #<>HandleIrq
                 sta @l vecIRQ
 
                 .m8
@@ -563,29 +522,29 @@ SetFont         .proc
 
                 .m8i8
                 lda #<GameFont
-                sta SOURCE
+                sta zpSource
                 lda #>GameFont
-                sta SOURCE+1
+                sta zpSource+1
                 lda #`GameFont
-                sta SOURCE+2
+                sta zpSource+2
 
                 lda #<FONT_MEMORY_BANK0
-                sta DEST
+                sta zpDest
                 lda #>FONT_MEMORY_BANK0
-                sta DEST+1
+                sta zpDest+1
                 lda #`FONT_MEMORY_BANK0
-                sta DEST+2
+                sta zpDest+2
 
                 ldx #$06                ; 6 pages
 _nextPage       ldy #$00
-_next1          lda [SOURCE],Y
-                sta [DEST],Y
+_next1          lda [zpSource],Y
+                sta [zpDest],Y
 
                 iny
                 bne _next1
 
-                inc SOURCE+1
-                inc DEST+1
+                inc zpSource+1
+                inc zpDest+1
 
                 dex
                 bne _nextPage

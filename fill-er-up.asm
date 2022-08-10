@@ -5,6 +5,10 @@
 ; A.N.A.L.O.G. COMPUTING #10
 ;======================================
 
+;   SP00        star
+;   SP01        player
+
+
                 .cpu "65816"
 
                 .include "equates_system_c256.asm"
@@ -14,6 +18,7 @@
                 .include "macros_65816.asm"
                 .include "macros_frs_graphic.asm"
                 .include "macros_frs_mouse.asm"
+                .include "macros_frs_random.asm"
 
 
 ;--------------------------------------
@@ -29,13 +34,14 @@ BOOT            clc
                 .m8i8
                 .setdp $0000
                 .setbank $00
+                cld
 
                 jmp START
 
 
 ;--------------------------------------
 ;--------------------------------------
-                * = $1400
+                * = $2000
 ;--------------------------------------
 
                 .include "main.asm"
@@ -44,15 +50,15 @@ BOOT            clc
 ;--------------------------------------
 ;--------------------------------------
 
-                .include "SPRITE_player.asm"
+                .include "player.asm"
                 .include "panel.asm"
-                .include "SPRITE_star.asm"
+                .include "star.asm"
                 .include "search.asm"
                 .include "regionfill.asm"
 
 
 ;--------------------------------------
-                .align $100
+                .align $1000
 ;--------------------------------------
 
                 .include "interrupt.asm"
@@ -67,7 +73,7 @@ BOOT            clc
 
 
 ;--------------------------------------
-                .align $100
+                .align $1000
 ;--------------------------------------
 
 GameFont        .include "FONT.asm"
@@ -75,3 +81,11 @@ GameFont_end
 
 Palette         .include "PALETTE.asm"
 Palette_end
+
+
+;--------------------------------------
+                .align $100
+;--------------------------------------
+
+Stamps          .include "SPRITES.asm"
+Stamps_end

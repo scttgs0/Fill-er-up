@@ -2,13 +2,14 @@
 ; Start of Code
 ;--------------------------------------
 START           .proc
+                jsr Random_Seed
+
                 .frsGraphics mcTextOn|mcOverlayOn|mcGraphicsOn|mcSpriteOn,mcVideoMode320
                 .frsMouse_off
                 .frsBorder_off
 
                 jsr InitLUT
                 jsr InitCharLUT
-                jsr InitSprites
 
                 lda #<CharResX
                 sta COLS_PER_LINE
@@ -29,50 +30,51 @@ START           .proc
 
                 jsr InitSID             ; init sounds
 
-;   5th-player, player > playfield > background
-                ;lda #$11               ; P/M priority
-                ;sta GPRIOR
-
-                lda #1                  ; don't show player or star
-                sta SHOOFF              ; we still must clear P/M area
+                lda #TRUE               ; don't show player or star
+                sta isHidePlayer        ; we still must clear P/M area
                 sta isFillOn
+
+                lda #FALSE
+                sta isGameOver
+
+                jsr InitSprites
                 jsr SpritesClear
 
-                lda #64                 ; and set up the star's height and horizontal position
-                sta vStarHeight
+                lda #64                 ; and set up the star's vertical and horizontal position
+                sta StarVertPos
                 lda #128
-                sta STRHOR
+                sta StarHorzPos
 
                 lda #$30                ; now let's zero out the score areas!
                 ldx #4                  ; 5-digit values
-ZSCLP           sta panelTarget,X
+_zerogoal       sta panelTarget,X
                 sta panelCurrent,X
                 dex
-                bpl ZSCLP
+                bpl _zerogoal
 
-                ldx #5
-ZSCLP2          sta panelScore,X
+                ldx #5                  ; 6-digit value
+_zeroscore      sta panelScore,X
                 dex
-                bpl ZSCLP2
+                bpl _zeroscore
 
-                lda #0                  ; these items must be set to zero on startup or
+                lda #FALSE              ; these items must be set to zero on startup or
                 sta isFillOn            ; else we'll wind up with nasty things happening!
                 sta isDead
-                sta NOCCHG
+                sta isPreventColorChange
                 ;sta HITCLR             ; clear collisions
                 ;sta NMIEN              ; disable interrupts
-                sta HASDRN
+                sta hasDrawn
 
                 ldx #5                  ; let's zero out the score counter...
-CMSLP           sta SCORE,X
+_CMSLP          sta SCORE,X
                 dex
-                bpl CMSLP
+                bpl _CMSLP
 
                 sta LEVEL               ; and level #!
 
                 lda #3                  ; we start with 3 lives
                 sta LIVES
-                ora #$30                ; add color
+                ora #$30                ; convert to ascii
                 sta panelLives          ; and put them in the score line
 
                 ;lda #$0A               ; next we set up the colors we want to use.
@@ -90,24 +92,7 @@ CMSLP           sta SCORE,X
                 ;lda #$34
                 ;sta COLPM0
 
-                ;lda #<DLIST          	; we'd better tell the computer where our display list is located!
-                ;sta DLISTL
-                ;lda #>DLIST
-                ;sta DLISTL+1
-
-                ;lda #6
-                ;ldy #<Interrupt_VBI    ; tell where the vertical blank interrupt is
-                ;ldx #>Interrupt_VBI
-                ;jsr SETVBV             ; and set it!
-
-                ;lda #$2E               ; turn on the DMA control
-                ;sta DMACTL             ; dma instruction fetch, P/M DMA, standard playfield
-
-                ;lda #$3                ; ... and graphics control!
-                ;sta GRACTL             ; turn on P/M
-
-                ;lda #$40               ; enable VBI
-                ;sta NMIEN
+                jsr InitIRQs
 
                 jmp ClearDisplay
 

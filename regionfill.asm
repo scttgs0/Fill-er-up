@@ -36,7 +36,7 @@ FillRegion      .proc
                 adc #1
                 sta MAXY
                 lda #0
-                sta SCTALY
+                sta ScoreTally
 
                 .endproc
 
@@ -79,7 +79,7 @@ _fillit         lda FX
                 lda (LO),Y
                 ora COLOR3,X
                 sta (LO),Y
-                inc SCTALY
+                inc ScoreTally
                 jsr Locate
 
                 cmp #0
@@ -109,7 +109,7 @@ _loclp3         lda C2TALY
 
 _loclp4         jsr LOCPRV
 
-                cmp BITSON,X
+                cmp BitsOn,X
                 beq _fillit
 
                 jmp CLRC2T
@@ -128,15 +128,15 @@ Locate          .proc
                 cmp MAXX
                 bne _stofx
 
-                lda CURLO
+                lda CurrentLO
                 clc
-                adc SCTALY
-                sta CURLO
-                lda CURHI
+                adc ScoreTally
+                sta CurrentLO
+                lda CurrentHI
                 adc #0
-                sta CURHI
+                sta CurrentHI
                 lda #0
-                sta SCTALY
+                sta ScoreTally
                 lda MINX
                 sta FX
                 lda #0
@@ -176,15 +176,15 @@ _stofx          lda FX
                 jsr PlotCalc
 
                 ldy #0
-                lda BITSON,X
+                lda BitsOn,X
                 and (LO),Y
                 cmp COLOR2,X
                 bne _notc2
 
-                lda BITSON,X
+                lda BitsOn,X
                 ora (LO),Y
                 sta (LO),Y
-                inc SCTALY
+                inc ScoreTally
                 lda #2
                 rts
 
@@ -220,7 +220,7 @@ LOCPRV          .proc
                 jsr PlotCalc
 
                 ldy #0
-                lda BITSON,X
+                lda BitsOn,X
                 and (LO),Y
                 rts
 

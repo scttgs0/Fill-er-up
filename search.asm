@@ -13,11 +13,11 @@ Search          .proc
                 sta isFillOn
                 lda #0
                 sta D
-                lda STRHOR
+                lda StarHorzPos
                 sec
                 sbc #44
                 sta SX
-                lda vStarHeight
+                lda StarVertPos
                 sec
                 sbc #13
                 sta SY
@@ -36,7 +36,7 @@ _findcl         ldx D
 
                 ldy #0
                 lda (LO),Y
-                and BITSON,X
+                and BitsOn,X
                 cmp COLOR1,X
                 beq _findc2
 
@@ -190,7 +190,7 @@ LOCTXY          .proc
 
                 ldy #0
                 lda (LO),Y
-                and BITSON,X
+                and BitsOn,X
                 rts
 
 _noread         lda #0
@@ -270,7 +270,7 @@ _tminy2         cmp MINY
 _endmm2         jsr PlotCalc
 
                 ldy #0
-                lda BITOFF,X
+                lda BitsOff,X
                 and (LO),Y
                 ora COLOR2,X
                 sta (LO),Y
