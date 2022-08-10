@@ -298,6 +298,9 @@ _XIT            .m16i16
 ; VBI ROUTINE
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 VBIHandler      .proc
+KEY_SPACE       = $39
+;---
+
                 php
 
                 .m16i16
@@ -307,7 +310,7 @@ VBIHandler      .proc
 
                 .m8i8
                 lda KEYCHAR
-                cmp #$21                ; is spacebar?
+                cmp #KEY_SPACE          ; is spacebar?
                 bne _1                  ;   no, check for pause
 
                 lda #$FF                ; clear key code -- (processed)
@@ -320,7 +323,7 @@ VBIHandler      .proc
 _1              lda isPaused            ; are we paused?
                 beq _2                  ;   no!
 
-                rtl                     ; when paused, no VBI!
+                jmp _XIT                ; when paused, no VBI!
 
 _2              lda vBumpSndCount       ; more bump sound?
                 bmi _3                  ;   no, process timer
@@ -341,7 +344,7 @@ _3              lda TIMER               ; timer down to zero?
 _4              lda isFillOn            ; are we filling?
                 beq _5                  ;   no, do rest of VBI
 
-                rtl                     ; when filling, exit VBI
+                jmp _XIT                ; when filling, exit VBI
 
 _5              lda #0                  ; clear out dead flag
                 sta isDead
