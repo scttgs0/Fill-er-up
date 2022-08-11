@@ -313,7 +313,16 @@ KEY_SPACE       = $39
                 inc A
                 sta JIFFYCLOCK
 
-                lda KEYCHAR
+                lda JOYSTICK0           ; read joystick0
+                and #$1F
+                cmp #$1F
+                beq _pause                ; when no activity, keyboard is alternative
+
+                sta InputFlags          ; joystick activity -- override keyboard input
+                lda #itJoystick
+                sta InputType
+
+_pause          lda KEYCHAR
                 cmp #KEY_SPACE          ; is spacebar?
                 bne _1                  ;   no, check for pause
 
@@ -401,21 +410,26 @@ _11             sta StarRotPos          ; save rot. pos.
 
 ;   this section draws the star.
 
-_12             ldy StarRotPos
-                ldx StarVertPos
+_12             ;ldy StarRotPos
+                ;ldx StarVertPos
 
                 .m16
                 lda StarHorzPos         ; set star's horiz. pos.
                 and #$FF                ; byte->word
                 asl A                   ; *2, account for double-pixel display
+                clc                     ; +32, account for off-screen border
+                adc #32
                 sta SP01_X_POS
 
                 lda StarVertPos         ; set star's vert. pos.
                 and #$FF                ; byte->word
                 asl A                   ; *2, account for double-pixel display
+                clc                     ; +32, account for off-screen border
+                adc #32
                 sta SP01_Y_POS
 
-                tya
+                lda StarRotPos
+                and #$FF                ; byte->word
                 asl A                   ; *2, word lookup table
                 tay
                 lda StarRotTbl,Y

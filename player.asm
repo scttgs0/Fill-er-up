@@ -249,7 +249,7 @@ _jgstk          jmp GetStick            ; go get stick
 
 _gotstk         lda #4                  ; set up the
                 sta vMoveTimer          ; movement timer
-                lda JOYSTICK0           ; get the stick
+                lda InputFlags          ; get the stick
                 sta STKHLD              ; and save it
                 tax                     ; then look up
                 lda XD,X                ; x direction
@@ -302,7 +302,7 @@ _gotstk         lda #4                  ; set up the
                 lda BitsOn,X
                 and (LO),Y
                 pha                     ; and save it!
-                lda JOYSTICK0           ; trigger pressed?
+                lda InputFlags          ; trigger pressed?
                 and #$10
                 bne _notdrn             ;   no!
 
