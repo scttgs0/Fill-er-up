@@ -281,7 +281,7 @@ _8r             pla
                 stz KEYCHAR
                 bra _XIT
 
-_CleanUpXIT     ;stz KEYCHAR    HACK:
+_CleanUpXIT     stz KEYCHAR
                 pla
 
 _XIT            .m16i16
@@ -309,6 +309,10 @@ KEY_SPACE       = $39
                 phy
 
                 .m8i8
+                lda JIFFYCLOCK          ; increment the jiffy clock each VBI
+                inc A
+                sta JIFFYCLOCK
+
                 lda KEYCHAR
                 cmp #KEY_SPACE          ; is spacebar?
                 bne _1                  ;   no, check for pause
@@ -395,51 +399,79 @@ _10             lda #1                  ; set rot. timer to 1
 _11             sta StarRotPos          ; save rot. pos.
 
 
-;   this section draws the star in player-0 memory
-;   using the tables 'starb1' thru 'starb8'.
+;   this section draws the star.
 
 _12             ldy StarRotPos
                 ldx StarVertPos
 
                 .m16
                 lda StarHorzPos         ; set star's horiz. pos.
-                and #$FF
-                asl A
+                and #$FF                ; byte->word
+                asl A                   ; *2, account for double-pixel display
                 sta SP01_X_POS
 
                 lda StarVertPos         ; set star's vert. pos.
-                and #$FF
-                asl A
+                and #$FF                ; byte->word
+                asl A                   ; *2, account for double-pixel display
                 sta SP01_Y_POS
 
                 tya
-                asl A
+                asl A                   ; *2, word lookup table
                 tay
                 lda StarRotTbl,Y
                 sta SP01_ADDR
                 .m8
 
-                lda isHidePlayer        ; ok to show player?
+                lda zpPlayerColorClock  ; is it time to change color?
+                cmp JIFFYCLOCK
+                bne _13                 ;   no, skip
+
+                lda JIFFYCLOCK
+                clc                     ;   yes, reset the color clock
+                adc #4
+                sta zpPlayerColorClock
+
+_13             lda isHidePlayer        ; ok to show player?
                 bne _XIT                ;   no, exit VBI
 
                 .m16
                 lda PX                  ; set player's horizontal position
-                and #$FF
-                clc
-                adc #47
+                and #$FF                ; byte->word
+                asl A                   ; *2, account for double-pixel display
+                clc                     ; +32, account for off-screen border
+                adc #32
                 sta SP00_X_POS
 
-                lda PY                  ; draw player in player-1 memory
-                and #$FF
-                clc
-                adc #$10
+                lda PY                  ; set player's vertical position
+                and #$FF                ; byte->word
+                asl A                   ; *2, account for double-pixel display
+                clc                     ; +32, account for off-screen border
+                adc #32
                 sta SP00_Y_POS
                 .m8
 
                 lda isPreventColorChange ; color change ok?
                 bne _XIT                ;   no, exit VBI
 
-                ;inc COLPM3             ;   yes, cycle the color
+                inc zpPlayerColorIdx    ;   yes, cycle the color
+                cmp #$10
+                bcc _14
+
+                stz zpPlayerColorIdx
+
+_14             lda zpPlayerColorIdx
+                asl A                   ; *4
+                asl A
+                tax
+                ldy #0
+_nextColor      lda palColor0,X
+                sta SprColor0,Y
+                inx
+                iny
+                cpy #4
+                bne _nextColor
+
+                jsr InitLUT
 
 _XIT            .m16i16
                 ply

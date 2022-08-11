@@ -147,6 +147,7 @@ _drawln         jsr PlotCalc
                 sta PX                  ; player
                 lda #84
                 sta PY
+
                 lda LEVEL               ; increment the
                 clc                     ; level number
                 adc #1
@@ -185,7 +186,7 @@ _drawln         jsr PlotCalc
 ; REMEMBERS WHERE THE PLAYER MOVED
 ;--------------------------------------
 ClearTrackTbl   .proc
-                lda #0
+                lda #FALSE
                 sta isHidePlayer
                 tax
 _next1          sta DIR,X               ; clear direction
@@ -586,8 +587,8 @@ _releas         lda CONSOL              ; key pressed, now
 ; LOCATION IF THERE ARE MORE LIVES LEFT.
 ;--------------------------------------
 RandomLocation  .proc
-                lda #1                  ; don't show
-                sta isHidePlayer              ; player
+                lda #TRUE               ; don't show
+                sta isHidePlayer        ; player
 _newloc         .randomByte             ; get random x
                 and #$FE                ; must be even
                 cmp #159                ; and on screen

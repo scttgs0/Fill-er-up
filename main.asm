@@ -94,6 +94,11 @@ _CMSLP          sta SCORE,X
 
                 jsr InitIRQs
 
+                lda JIFFYCLOCK          ; initialize the player color clock
+                clc
+                adc #4
+                sta zpPlayerColorClock
+
                 jmp ClearDisplay
 
                 .endproc

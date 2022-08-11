@@ -62,6 +62,9 @@ _XIT            rts
 ;
 ;======================================
 RenderPanel     .proc
+v_renderLine    .var (CharResY-5)*CharResX
+;---
+
                 php
                 .m8i8
 
@@ -74,9 +77,9 @@ _nextColor      inx
                 beq _processText
 
                 lda ScoreLine1Color,Y
-                sta CS_COLOR_MEM_PTR+(CharResY-3)*CharResX,X
+                sta CS_COLOR_MEM_PTR+v_renderLine,X
                 inx
-                sta CS_COLOR_MEM_PTR+(CharResY-3)*CharResX,X
+                sta CS_COLOR_MEM_PTR+v_renderLine,X
                 bne _nextColor
 
 ;   process the text
@@ -105,9 +108,9 @@ _cont           cmp #$20
                 bcc _number
                 bra _letter
 
-_space          sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+_space          sta CS_TEXT_MEM_PTR+v_renderLine,X
                 inx
-                sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+                sta CS_TEXT_MEM_PTR+v_renderLine,X
 
                 bra _nextChar
 
@@ -118,18 +121,18 @@ _number         sec
 
                 clc
                 adc #$A0
-                sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+                sta CS_TEXT_MEM_PTR+v_renderLine,X
                 inx
                 inc A
-                sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+                sta CS_TEXT_MEM_PTR+v_renderLine,X
 
                 bra _nextChar
 
-_letter         sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+_letter         sta CS_TEXT_MEM_PTR+v_renderLine,X
                 inx
                 clc
                 adc #$40
-                sta CS_TEXT_MEM_PTR+(CharResY-3)*CharResX,X
+                sta CS_TEXT_MEM_PTR+v_renderLine,X
 
                 bra _nextChar
 

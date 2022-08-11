@@ -24,6 +24,9 @@ YI                  .byte ?
 
 isGameOver          .byte ?
 
+zpPlayerColorIdx    .byte ?
+zpPlayerColorClock  .byte ?
+
 JIFFYCLOCK          .byte ?
 InputFlags          .byte ?
 InputType           .byte ?

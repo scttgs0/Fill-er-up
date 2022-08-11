@@ -1,5 +1,5 @@
-BkColor         .dword $00000000
-PfColor0        .dword $00df251c
+BkColor         .dword $00000000    ; [00]
+PfColor0        .dword $00df251c    ; [01]
 PfColor1        .dword $0073716f
 PfColor2        .dword $00202d78
 PfColor3        .dword $00757420
@@ -7,31 +7,31 @@ PfColor4        .dword $00462075
 PfColor5        .dword $00300400
 PfColor6        .dword $000000e2
 PfColor7        .dword $00400000
-SprColor0       .dword $009b4884    ; player
-SprColor1       .dword $00df251c    ; star
+SprColor0       .dword $009b4884    ; [09] player 
+SprColor1       .dword $00df251c    ; [0A] star
 SprColor2       .dword $00ebd77e
 SprColor3       .dword $00610000
 SprColor4       .dword $00480800
 SprColor5       .dword $00002000
 SprColor6       .dword $00002020
 SprColor7       .dword $00201c00
-GrmnUnit        .dword $0053b8da
-FinnUnit        .dword $00d1d1d1
-ItlnUnit        .dword $00a6a4a5
-AxisUnit        .dword $0065c556
-RssnUnit        .dword $00745720
-Black           .dword $00000000
-                .dword $00c20000
-                .dword $00612000
-                .dword $00a100a1
-                .dword $00004000
-                .dword $00303030
-                .dword $00004040
-                .dword $00e20000
-                .dword $00c200c2
-                .dword $00ff0000
-                .dword $00713010
-                .dword $00484000
+palColor0       .dword $0053b8da    ; [11]
+palColor1       .dword $00fc901c
+palColor2       .dword $00fc801c
+palColor3       .dword $00f85054
+palColor4       .dword $00cc3ccc
+palColor5       .dword $00c048dc
+palColor6       .dword $00a050d8
+palColor7       .dword $005868fc
+palColor8       .dword $006864fc
+palColor9       .dword $004898d8
+palColorA       .dword $0054a838
+palColorB       .dword $001cb814
+palColorC       .dword $0008ac1c
+palColorD       .dword $00649028
+palColorE       .dword $00ac9838
+palColorF       .dword $00bc7430
+                .dword $00484000    ; [21]
                 .dword $00e200e2
                 .dword $00404040
                 .dword $00504038
