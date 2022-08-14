@@ -1,8 +1,8 @@
 ;DLIST          ;.byte AEMPTY8,AEMPTY8,AEMPTY8
 
-                ;.byte $0D+ALMS
+                ;.byte $0D+ALMS             ; 160x172
                 ;    .addr DISP
-                ;.byte $0D,$0D,$0D,$0D
+                ;.byte $0D,$0D,$0D,$0D      ; 40-byte line; 160 pixels; double-line (86*2=172)
                 ;.byte $0D,$0D,$0D,$0D
                 ;.byte $0D,$0D,$0D,$0D
                 ;.byte $0D,$0D,$0D,$0D
@@ -110,12 +110,12 @@ COLOR3          .byte $C0,$30,$0C,$03
 
 BitsOn          .byte $C0,$30,$0C,$03
 BitsOff         .byte $3F,$CF,$F3,$FC
-BXSTRT          .byte 0,158,158,0
+
+BXSTRT          .byte 4,154,154,4
 BYSTRT          .byte 0,0,84,84
 BXINC           .byte 1,0,255,0
 BYINC           .byte 0,1,0,255
-
-BORCNT          .byte 159,85,159,85
+BORCNT          .byte 151,85,151,85
 BORNUM          .byte 0
 
 BDINCX          .byte 0
