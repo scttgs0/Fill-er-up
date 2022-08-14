@@ -47,6 +47,8 @@ BORDER_Y_SIZE           = $AF_0009      ; Values: 0 - 32 (Default: 32)
 BITMAP0_CTRL            = $AF_0100
 bmcEnable           = $01
 BITMAP0_START_ADDR      = $AF_0101
+BM0_X_OFFSET            = $AF_0104   ; Not Implemented
+BM0_Y_OFFSET            = $AF_0105   ; Not Implemented
 
 ;---------------------------------------
 

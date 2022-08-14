@@ -42,6 +42,9 @@ zpSize              .dword ?            ; Number of bytes to copy (4 bytes)
 zpTemp1             .byte ?
 zpTemp2             .byte ?
 
+zpIndex1            .word ?
+zpIndex2            .word ?
+
 RND_MIN             .byte ?
 RND_SEC             .byte ?
 RND_RESULT          .word ?
