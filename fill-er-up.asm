@@ -61,7 +61,7 @@ BOOT            clc
 
 
 ;--------------------------------------
-                .align $1000
+                .align $100
 ;--------------------------------------
 
                 .include "interrupt.asm"
@@ -93,10 +93,12 @@ Palette_end
 Stamps          .include "SPRITES.asm"
 Stamps_end
 
+Playfield       .fill 86*40,$00
+                .fill 10*40,$00         ; overflow to prevent screen artifacts
+
 ;--------------------------------------
 ;--------------------------------------
-                .align $1000
+                .align $100
 ;--------------------------------------
 
-Playfield       .fill 86*40,$00
-Video8K         .fill 8192
+Video8K         .fill 8192,$00

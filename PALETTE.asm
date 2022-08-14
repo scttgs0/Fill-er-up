@@ -1,14 +1,14 @@
 BkColor         .dword $00000000    ; [00]
-PfColor0        .dword $00df251c    ; [01]
-PfColor1        .dword $0073716f
-PfColor2        .dword $00202d78
-PfColor3        .dword $00757420
+PfColor0        .dword $00e4e4e4    ; [01]
+PfColor1        .dword $00c85020
+PfColor2        .dword $001c70c4
+PfColor3        .dword $00088814
 PfColor4        .dword $00462075
 PfColor5        .dword $00300400
 PfColor6        .dword $000000e2
 PfColor7        .dword $00400000
-SprColor0       .dword $009b4884    ; [09] player 
-SprColor1       .dword $00df251c    ; [0A] star
+SprColor0       .dword $005868fc    ; [09] player 
+SprColor1       .dword $00dc241c    ; [0A] star
 SprColor2       .dword $00ebd77e
 SprColor3       .dword $00610000
 SprColor4       .dword $00480800

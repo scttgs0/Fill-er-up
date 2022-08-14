@@ -78,21 +78,6 @@ _CMSLP          sta SCORE,X
                 ora #$30                ; convert to ascii
                 sta panelLives          ; and put them in the score line
 
-                ;lda #$0A               ; next we set up the colors we want to use.
-                ;sta COLPF0
-                ;lda #$24
-                ;sta COLPF1
-                ;lda #$94
-                ;sta COLPF2
-                ;lda #$C4
-                ;sta COLPF3
-                ;lda #0
-                ;sta COLBK
-                ;lda #$76
-                ;sta COLPM3
-                ;lda #$34
-                ;sta COLPM0
-
                 jsr InitIRQs
 
                 lda JIFFYCLOCK          ; initialize the player color clock

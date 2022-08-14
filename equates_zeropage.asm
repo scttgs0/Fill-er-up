@@ -44,6 +44,7 @@ zpTemp2             .byte ?
 
 zpIndex1            .word ?
 zpIndex2            .word ?
+zpIndex3            .word ?
 
 RND_MIN             .byte ?
 RND_SEC             .byte ?
