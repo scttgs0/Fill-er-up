@@ -2,8 +2,6 @@
 ; Miscellaneous Memory Usage
 ;--------------------------------------
 
-DISP            = $B00000
-
 CharResX        = 40
 CharResY        = 30
 
