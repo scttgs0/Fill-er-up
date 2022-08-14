@@ -1,8 +1,14 @@
 VRAM            = $B00000               ; First byte of video RAM
 
 SPRITES         = VRAM
-BITMAP          = VRAM+$1000
+BITMAP          = VRAM+$2000
 
+BITMAP0         = $2000+$1E00
+BITMAP1         = BITMAP0+$1E00
+BITMAP2         = BITMAP1+$1E00
+BITMAP3         = BITMAP2+$1E00
+BITMAP4         = BITMAP3+$1E00
+BITMAP5         = BITMAP4+$1E00
 
 
 ;======================================
@@ -221,19 +227,19 @@ InitBitmap      .proc
                 phb
 
                 .m16i16
-                lda #$B000              ; Set the size
+                lda #$7D70              ; Set the size
                 sta zpSize
-                lda #$04
+                lda #$00
                 sta zpSize+2
 
-                lda #<>HeaderPanel      ; Set the source address
+                lda #<>Playfield        ; Set the source address
                 sta zpSource
-                lda #`HeaderPanel
+                lda #`Playfield
                 sta zpSource+2
 
-                lda #<>(BITMAP-VRAM)   ; Set the destination address
+                lda #<>(BITMAP-VRAM)    ; Set the destination address
                 sta zpDest
-                sta BITMAP0_START_ADDR ; And set the Vicky register
+                sta BITMAP0_START_ADDR  ; And set the Vicky register
 
                 lda #`(BITMAP-VRAM)
                 sta zpDest+2
@@ -246,9 +252,153 @@ InitBitmap      .proc
                 lda #bmcEnable
                 sta BITMAP0_CTRL
 
+                ; lda #0
+                ; sta BM0_X_OFFSET
+                ; sta BM0_Y_OFFSET
+
                 plb
                 plp
                 rts
+                .endproc
+
+
+;======================================
+; BlitPlayfield
+;======================================
+SetVideoRam     .proc
+                php
+                phx
+                phy
+
+                .m16
+                lda #<>Video8K          ; Set the destination address
+                sta zpDest
+                lda #`Video8K
+                sta zpDest+2
+                .m8
+
+                .i16
+                ldy #0
+                sty zpIndex1
+                sty zpIndex2
+
+_nextByte       ldy zpIndex1
+                lda [zpSource],Y
+                iny
+                sty zpIndex1
+
+                ldx #3
+_nextPixel      stz zpTemp1
+                asl A
+                rol zpTemp1
+                asl A
+                rol zpTemp1
+
+                pha
+                lda zpTemp1
+                ldy zpIndex2
+                sta [zpDest],Y
+                iny
+                sta [zpDest],Y          ; double-pixel
+                iny
+                sty zpIndex2
+                pla
+
+                dex
+                bpl _nextPixel
+
+                ldx zpIndex1
+                cpx #$3C0               ; 24 lines
+                bne _nextByte 
+
+                .i8
+
+                ply
+                plx
+                plp
+                rts
+                .endproc
+
+
+;======================================
+; 
+;======================================
+BlitVideoRam    .proc
+                php
+                phb
+
+                .m16
+
+                lda #$1E00              ; Set the size
+                sta zpSize
+                lda #0
+                sta zpSize+2
+
+                lda #<>Video8K          ; Set the source address
+                sta zpSource
+                lda #`Video8K
+                sta zpSource+2
+
+                .m8
+
+                jsr Copy2VRAM
+
+                plb
+                plp
+                rts
+                .endproc
+
+
+;======================================
+; 
+;======================================
+BlitPlayfield   .proc
+                php
+
+                ldy #3
+                ldx #0
+
+_nextBank       .m16
+                lda _data_Source,X    ; Set the source address
+                sta zpSource
+                lda _data_Source+2,X
+                and #$FF
+                sta zpSource+2
+                .m8
+
+                jsr SetVideoRam
+
+                .m16
+                lda _data_Dest,X      ; Set the destination address
+                sta zpDest
+                lda _data_Dest+2,X
+                and #$FF
+                sta zpDest+2
+                .m8
+
+                phx
+                phy
+                jsr BlitVideoRam
+                ply
+                plx
+
+                inx
+                inx
+                inx
+                dey
+                bpl _nextBank
+
+                plp
+                rts
+
+;--------------------------------------
+
+_data_Source    .long Playfield,Playfield+$03C0
+                .long Playfield+$0780,Playfield+$0B40
+
+_data_Dest      .long BITMAP0,BITMAP1
+                .long BITMAP2,BITMAP3
+
                 .endproc
 
 
@@ -317,16 +467,17 @@ _next1T         sta [zpDest],Y
 ClearGamePanel  .proc
 v_EmptyText     .var $00
 v_TextColor     .var $40
+v_RenderLine    .var 24*CharResX
 ;---
 
                 php
                 .m8i8
 
-                lda #<CS_COLOR_MEM_PTR+24*CharResX
+                lda #<CS_COLOR_MEM_PTR+v_RenderLine
                 sta zpDest
-                lda #>CS_COLOR_MEM_PTR+24*CharResX
+                lda #>CS_COLOR_MEM_PTR+v_RenderLine
                 sta zpDest+1
-                lda #`CS_COLOR_MEM_PTR+24*CharResX
+                lda #`CS_COLOR_MEM_PTR+v_RenderLine
                 sta zpDest+2
 
                 lda #v_TextColor
@@ -337,11 +488,11 @@ _next1          sta [zpDest],Y
                 cpy #$F0                ; 6 lines
                 bne _next1
 
-                lda #<CS_TEXT_MEM_PTR+24*CharResX
+                lda #<CS_TEXT_MEM_PTR+v_RenderLine
                 sta zpDest
-                lda #>CS_TEXT_MEM_PTR+24*CharResX
+                lda #>CS_TEXT_MEM_PTR+v_RenderLine
                 sta zpDest+1
-                lda #`CS_TEXT_MEM_PTR+24*CharResX
+                lda #`CS_TEXT_MEM_PTR+v_RenderLine
                 sta zpDest+2
 
                 lda #v_EmptyText

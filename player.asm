@@ -23,64 +23,68 @@ _next1          ;--sta SPR_STAR,X
 ; multiply PLOTY by 40, then calculate
 ; address of the screen memory to be
 ; altered.
+;--------------------------------------
+; at exit
+;   HI:LO       address
+;   X           pixel position
 ;======================================
-PlotCalc        .proc
-                lda PLOTY
-                asl A
-                sta LO
+PlotCalc        .proc                               ; Given: PLOTX=14, PLOTY=10
+                lda PLOTY                           ; A=$0A
+                asl A                  ; *2         ; A=$14
+                sta LO                              ; LO=$14
 
-                lda #0
-                sta HI                  ; *2
+                lda #0                              ; A=0
+                sta HI                              ; HI=$00
 
-                asl LO
-                rol HI                  ; *4
+                asl LO                              ; A=$28, C=0
+                rol HI                  ; *4        ; HI=$00
 
-                asl LO
-                lda LO
-                sta LOHLD
+                asl LO                              ; LO=$50, C=0
+                lda LO                              ; A=$50
+                sta LOHLD                           ; LOHLD=$50
 
-                rol HI                  ; *8
-                lda HI
-                sta HIHLD
+                rol HI                  ; *8        ; HI=$00
+                lda HI                              ; A=$00
+                sta HIHLD                           ; HIHLD=$00
 
-                asl LO
-                rol HI                  ; *16
-                asl LO
-                rol HI                  ; *32
+                asl LO                              ; LO=$A0, C=0
+                rol HI                  ; *16       ; HI=$00
+                asl LO                              ; LO=$40, C=1
+                rol HI                  ; *32       ; HI=$01
 
-                lda LO
+                lda LO                              ; A=$40
                 clc
-                adc LOHLD
-                sta LO
+                adc LOHLD                           ; A=$90
+                sta LO                              ; LO=$90
 
-                lda HI
-                adc HIHLD
-                sta HI                  ; +*8=*40
+                lda HI                              ; A=$01
+                adc HIHLD                           ; A=$01
+                sta HI                  ; +*8=*40   ; HI=$01
 
-                lda #<DISP
+                lda #<Playfield                     ; A=$00
                 clc
-                adc LO
-                sta LO
+                adc LO                              ; A=$90, C=0
+                sta LO                              ; LO=$90
 
-                lda #>DISP
-                adc HI
-                sta HI                  ; +display start
+                lda #>Playfield                     ; A=$70
+                adc HI                              ; A=$71
+                sta HI          ; +display start    ; HI=$71
 
-                lda PLOTX               ; mask x position
-                and #3
-                tax
+                lda PLOTX       ; mask x position   ; A=$0E
+                and #3                              ; A=$02
+                tax                                 ; X=$02
 
-                lda PLOTX
-                lsr A
-                lsr A
+                lda PLOTX                           ; A=$0E
+                lsr A                   ; /4        ; A=$07, C=0
+                lsr A                               ; A=$03, C=1
                 clc
-                adc LO
-                sta LO
+                adc LO                              ; A=$93
+                sta LO                              ; LO=$93
 
-                lda HI
-                adc #0                  ; lo & hi now hold
-                sta HI                  ; the address!
-                rts                     ; exit!
+                lda HI                              ; A=$71
+                adc #0          ; lo & hi now hold  ; A=$71
+                sta HI          ; the address!      ; HI=$71
+                rts                     ; exit!     ; addr=$7193 = Playfield+403
                 .endproc
 
 
@@ -94,8 +98,9 @@ _next1          stx PLOTY               ; of the beginning of
                 jsr PlotCalc            ; each gr.7 line
 
                 ldx PLOTY               ; then zeroes out each of the
+
                 lda #$00                ; 40 bytes (0-39) in the line.
-                ldy #39     ; TODO:
+                ldy #39
 _next2          sta (LO),Y
                 dey
                 bpl _next2
@@ -109,36 +114,47 @@ _next2          sta (LO),Y
 ; -----------------------
                 lda #3                  ; this routine
                 sta BORNUM              ; draws the 4 lines
+
 _border         ldx BORNUM              ; that make up the
                 lda BXSTRT,X            ; white gr.7 border
                 sta PLOTX               ; on the screen.
+
                 lda BYSTRT,X
                 sta PLOTY
-                lda BXINC,X
+
+                lda BXINC,X             ; delta-X
                 sta BDINCX
-                lda BYINC,X
+
+                lda BYINC,X             ; delta-Y
                 sta BDINCY
+
                 lda BORCNT,X
                 sta BDCNT
-_drawln         jsr PlotCalc
 
-                lda COLOR1,X
-                ldy #0
-                ora (LO),Y
-                sta (LO),Y
+_drawln         jsr PlotCalc            ; alters X:= pixel offset
+
+                lda COLOR1,X            ; X:3=  00 00 00 01
+                ldy #0                  ; X:2=  00 00 01 00
+                ora (LO),Y              ; X:1=  00 01 00 00
+                sta (LO),Y              ; X:0=  01 00 00 00
+
                 lda PLOTX
                 clc
                 adc BDINCX
                 sta PLOTX
+
                 lda PLOTY
                 clc
                 adc BDINCY
                 sta PLOTY
+
                 dec BDCNT
                 bne _drawln
 
                 dec BORNUM
                 bpl _border
+
+                jsr BlitPlayfield
 
 ;
 ; This section starts off each level

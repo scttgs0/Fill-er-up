@@ -4,7 +4,7 @@
 START           .proc
                 jsr Random_Seed
 
-                .frsGraphics mcTextOn|mcOverlayOn|mcGraphicsOn|mcSpriteOn,mcVideoMode320
+                .frsGraphics mcTextOn|mcOverlayOn|mcGraphicsOn|mcBitmapOn|mcSpriteOn,mcVideoMode320
                 .frsMouse_off
                 .frsBorder_off
 
@@ -37,6 +37,7 @@ START           .proc
                 lda #FALSE
                 sta isGameOver
 
+                jsr InitBitmap
                 jsr InitSprites
                 jsr SpritesClear
 
