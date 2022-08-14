@@ -460,7 +460,7 @@ _13             lda isHidePlayer        ; ok to show player?
                 and #$FF                ; byte->word
                 asl A                   ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
-                adc #32
+                adc #32+24-2
                 sta SP00_Y_POS
                 .m8
 
