@@ -418,15 +418,15 @@ _12             ;ldy StarRotPos
                 and #$FF                ; byte->word
                 asl A                   ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
-                adc #32
+                adc #32-6               ; -6, distance to star center
                 sta SP01_X_POS
 
                 lda StarVertPos         ; set star's vert. pos.
                 and #$FF                ; byte->word
                 asl A                   ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
-                adc #32
-                sta SP01_Y_POS
+                adc #32+24-6            ; +24, account for playfield vertical displacement
+                sta SP01_Y_POS          ; -6, distance to star center
 
                 lda StarRotPos
                 and #$FF                ; byte->word
@@ -453,15 +453,15 @@ _13             lda isHidePlayer        ; ok to show player?
                 and #$FF                ; byte->word
                 asl A                   ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
-                adc #32
+                adc #32-2               ; -2, distance to player center
                 sta SP00_X_POS
 
                 lda PY                  ; set player's vertical position
                 and #$FF                ; byte->word
                 asl A                   ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
-                adc #32+24-2
-                sta SP00_Y_POS
+                adc #32+24-2            ; +24, account for playfield vertical displacement
+                sta SP00_Y_POS          ; -2, distance to player center
                 .m8
 
                 lda isPreventColorChange ; color change ok?

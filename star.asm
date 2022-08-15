@@ -62,12 +62,26 @@ _wayclear       lda PLOTX               ; adjust star coordinates
                 adc #44                 ; from playfield.
                 sta StarHorzPos
 
-                lda PLOTY               
+;   enforce limits
+                cmp #154
+                bcc _1
+
+                lda #154
+                sta StarHorzPos
+
+_1              lda PLOTY
                 clc
                 adc #13
                 sta StarVertPos
 
-                lda TempDirection       ; restore direction
+;   enforce limits
+                cmp #84
+                bcc _2
+
+                lda #84
+                sta StarVertPos
+
+_2              lda TempDirection       ; restore direction
                 sta StarDirection
 
                 jmp GetStick            ; and loop
