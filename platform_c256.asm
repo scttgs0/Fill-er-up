@@ -106,7 +106,10 @@ _next1          sta $AF_E400,X
 ;======================================
 InitLUT         .proc
                 php
-                phb
+                phb                     ; required for mvn
+                pha
+                phx
+                phy
 
                 .m16i16
                 lda #Palette_end-Palette ; Copy the palette to LUT0
@@ -115,6 +118,9 @@ InitLUT         .proc
                 mvn `Palette,`GRPH_LUT0_PTR
 
                 .m8i8
+                ply
+                plx
+                pla
                 plb
                 plp
                 rts
@@ -174,7 +180,7 @@ Custom_LUT      .dword $00282828        ; 0: Dark Jungle Green  [Editor Text bg]
 ;======================================
 InitSprites     .proc
                 php
-                phb
+                pha
 
                 .m16i16
                 lda #Stamps_end-Stamps  ; Set the size
@@ -215,7 +221,7 @@ InitSprites     .proc
                 sta SP00_CTRL
                 sta SP01_CTRL
 
-                plb
+                pla
                 plp
                 rts
                 .endproc
@@ -226,7 +232,7 @@ InitSprites     .proc
 ;======================================
 InitBitmap      .proc
                 php
-                phb
+                pha
 
                 .m16i16
                 lda #$7D70              ; Set the size
@@ -254,11 +260,7 @@ InitBitmap      .proc
                 lda #bmcEnable
                 sta BITMAP0_CTRL
 
-                ; lda #0
-                ; sta BM0_X_OFFSET
-                ; sta BM0_Y_OFFSET
-
-                plb
+                pla
                 plp
                 rts
                 .endproc
@@ -269,6 +271,7 @@ InitBitmap      .proc
 ;======================================
 SetVideoRam     .proc
                 php
+                pha
                 phx
                 phy
 
@@ -372,6 +375,7 @@ _XIT            .i8
 
                 ply
                 plx
+                pla
                 plp
                 rts
                 .endproc
@@ -382,7 +386,7 @@ _XIT            .i8
 ;======================================
 BlitVideoRam    .proc
                 php
-                phb
+                pha
 
                 .m16
 
@@ -397,10 +401,9 @@ BlitVideoRam    .proc
                 sta zpSource+2
 
                 .m8
-
                 jsr Copy2VRAM
 
-                plb
+                pla
                 plp
                 rts
                 .endproc
@@ -411,6 +414,9 @@ BlitVideoRam    .proc
 ;======================================
 BlitPlayfield   .proc
                 php
+                pha
+                phx
+                phy
 
                 ldy #7
                 ldx #0
@@ -445,6 +451,9 @@ _nextBank       .m16
                 dey
                 bpl _nextBank
 
+                ply
+                plx
+                pla
                 plp
                 rts
 
@@ -475,6 +484,9 @@ v_TextColor     .var $40
 ;---
 
                 php
+                pha
+                phx
+                phy
                 .m8i8
 
 ;   clear color
@@ -517,6 +529,9 @@ _next1T         sta [zpDest],Y
                 dex
                 bne _nextPageT
 
+                ply
+                plx
+                pla
                 plp
                 rts
                 .endproc
@@ -532,6 +547,8 @@ v_RenderLine    .var 24*CharResX
 ;---
 
                 php
+                pha
+                phy
                 .m8i8
 
                 lda #<CS_COLOR_MEM_PTR+v_RenderLine
@@ -564,6 +581,8 @@ _next2          sta [zpDest],Y
                 cpy #$F0                ; 6 lines
                 bne _next2
 
+                ply
+                pla
                 plp
                 rts
                 .endproc
@@ -577,7 +596,7 @@ _next2          sta [zpDest],Y
 ;======================================
 BlitText        .proc
                 php
-                phb
+                pha
                 .m16i16
 
                 lda #640*16             ; Set the size
@@ -592,7 +611,7 @@ BlitText        .proc
 
                 jsr Copy2VRAM
 
-                plb
+                pla
                 plp
                 rts
                 .endproc
@@ -611,6 +630,7 @@ BlitText        .proc
 ;======================================
 Copy2VRAM       .proc
                 php
+                phb
                 .setbank `SDMA_SRC_ADDR
                 .setdp zpSource
                 .m8
@@ -669,6 +689,7 @@ wait_vdma       lda VDMA_STATUS         ; Get the VDMA status
                 .setdp $0000
                 .setbank $00
                 .m8i8
+                plb
                 plp
                 rts
 
