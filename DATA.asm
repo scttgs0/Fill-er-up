@@ -70,7 +70,8 @@ TargetHI        .byte 31,39,46,35,42,48,39,41
 
 STARSP          .byte 4,4,4,3,3,3,2,2
                 .byte 2,2,2,1,1,1,1,1
-KILLFG          .byte 0,0,1,0,1,1,0,1
+isUnconditionalKill
+                .byte 0,0,1,0,1,1,0,1
                 .byte 1,1,1,0,0,1,1,1
 
 SCORE           .byte 0,0,0,0,0,0
@@ -154,7 +155,7 @@ C2TALY          .byte 0
 isPreventColorChange
                 .byte 0
 DEDBRT          .byte 0
-STKHLD          .byte 0
+StickHold       .byte 0
 RDRCOL          .byte 0
 REDIR           .byte 0
 LGTHY           .byte 0
@@ -162,16 +163,16 @@ TIMES           .byte 0
 CKV             .byte 0
 CKVX            .byte 0
 isDrawActive    .byte 0
-MOVIX           .byte 0
+MoveIndex       .byte 0
 
 XD              .byte 0,0,0,0
-                .byte 0,0,0,1
-                .byte 0,0,0,255
+                .byte 0,0,0,1       ; %0111 = right := 1
+                .byte 0,0,0,255     ; %1011 = left  := 255
                 .byte 0,0,0,0
 YD              .byte 0,0,0,0
                 .byte 0,0,0,0
-                .byte 0,0,0,0
-                .byte 0,1,255,0
+                .byte 0,0,0,0       ; %1101 = down  := 1
+                .byte 0,1,255,0     ; %1110 = up    := 255
 
 SXD             .byte 0,1,0,255
 SYD             .byte 255,0,1,0

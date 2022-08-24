@@ -24,7 +24,7 @@ _next1          ;--sta SPR_STAR,X
 ; address of the screen memory to be
 ; altered.
 ;--------------------------------------
-; at exit
+; at exit:
 ;   HI:LO       address
 ;   X           pixel position
 ;======================================
@@ -84,7 +84,7 @@ PlotCalc        .proc                               ; Given: PLOTX=14, PLOTY=10
                 lda HI                              ; A=$71
                 adc #0          ; lo & hi now hold  ; A=$71
                 sta HI          ; the address!      ; HI=$71
-                rts                     ; exit!     ; addr=$7193 = Playfield+403
+                rts                                 ; addr=$7193 = Playfield+403
                 .endproc
 
 
@@ -156,25 +156,25 @@ _drawln         jsr PlotCalc            ; alters X:= pixel offset
 
                 jsr BlitPlayfield
 
-;
+; ----------------------------------
 ; This section starts off each level
-;
-                lda #80                 ; position the
-                sta PX                  ; player
+; ----------------------------------
+                lda #80                 ; position the player
+                sta PX
                 lda #84
                 sta PY
 
-                lda LEVEL               ; increment the
-                clc                     ; level number
+                lda LEVEL               ; increment the level number
+                clc
                 adc #1
                 sta LOWK
 
-                lda #0                  ; zero out current
-                sta CurrentLO           ; tally work area
+                lda #0                  ; zero out current tally work area
+                sta CurrentLO
                 sta CurrentHI
                 sta HIWK
-                lda #$FF                ; tell decimal converter
-                sta SLLOC               ; not to place result
+                lda #$FF                ; tell decimal converter not to place result
+                sta SLLOC
                 jsr ConvertDecimal      ; convert level #
 
                 lda DECIMAL+1           ; get decimal level #
@@ -184,8 +184,8 @@ _drawln         jsr PlotCalc            ; alters X:= pixel offset
                 ora #$30                ; level #
                 sta panelLevel+1        ; digit
 
-                ldx LEVEL               ; get this level's
-                lda TargetLO,X          ; parameters
+                ldx LEVEL               ; get this level's parameters
+                lda TargetLO,X
                 sta LOWK
                 lda TargetHI,X
                 sta HIWK
@@ -194,12 +194,13 @@ _drawln         jsr PlotCalc            ; alters X:= pixel offset
                 lda #4
                 sta SLLOC
                 jsr ConvertDecimal      ; show target amount
+
                 .endproc
 
 
 ;--------------------------------------
-; CLEAR OUT THE TRACKING TABLE THAT
-; REMEMBERS WHERE THE PLAYER MOVED
+; Clear out the tracking table that
+; remembers where the player moved
 ;--------------------------------------
 ClearTrackTbl   .proc
                 lda #FALSE
@@ -210,7 +211,7 @@ _next1          sta DIR,X               ; clear direction
                 dex
                 bne _next1
 
-                sta MOVIX               ; clear movement index
+                sta MoveIndex           ; clear movement index
                 sta isDrawActive        ; and draw flag
 
                 .endproc
@@ -236,78 +237,86 @@ _wait1          lda isPaused            ; game paused?
                 sta SID_CTRL3
 
                 lda isDead              ; did star hit us?
-                beq _alive              ; no!
+                beq _alive              ;   no!
 
-                ldx LEVEL               ; it hit us--
-                lda KILLFG,X            ; unconditional kill?
-                bne _jcrsh              ;   yes! we're dead!!!
+                ldx LEVEL               ; it hit us -- unconditional kill?
+                lda isUnconditionalKill,X
+                bne _jCrash             ;   yes! we're dead!!!
 
-                lda PX                  ;   no, if we're on a
-                sta PLOTX               ; white line (color 1)
-                lda PY                  ; then we're alive!
+                lda PX                  ;   no
+                sta PLOTX
+                lda PY
                 sta PLOTY
                 jsr PlotCalc
 
-                ldy #0
-                lda BitsOn,X
+                ldy #0                  ; if we're on a white line (color 1)
+                lda BitsOn,X            ; then we're alive!
                 and (LO),Y
                 cmp COLOR1,X            ; on color 1?
                 beq _alive              ;   yes (whew!)
 
-_jcrsh          jmp Crash               ; go kill player.
+_jCrash         jmp Crash               ; go kill player
 
 _alive          lda vMoveTimer          ; player moving?
                 beq _gotstk             ;   yes--get stick.
 
                 jmp MoveStar            ;   no, move star.
 
-_jgstk          jmp GetStick            ; go get stick
+_jGetStick      jmp GetStick            ; go get stick
 
-_gotstk         lda #4                  ; set up the
-                sta vMoveTimer          ; movement timer
+_gotstk         lda #4                  ; reset the movement timer
+                sta vMoveTimer
+
                 lda InputFlags          ; get the stick
-                sta STKHLD              ; and save it
+                and #$0F
+                sta StickHold           ; and save it
+
                 tax                     ; then look up
                 lda XD,X                ; x direction
                 clc
                 adc XD,X
-                sta XI                  ; and
-                lda YD,X                ; y direction
+                sta XI                  ; XI := [2]right | [-2]left
+
+                lda YD,X                ; and y direction
                 clc
                 adc YD,X
-                sta YI
-                ora XI                  ; any movement?
-                beq _jgstk              ;   no, try again.
+                sta YI                  ; YI := [2]down | [-2]up
 
-                lda PX                  ; increment
-                clc                     ; player x
-                adc XI                  ; position and
-                sta CKX                 ; hold it...
+                ora XI                  ; any movement?
+                beq _jGetStick          ;   no, try again.
+
+                lda PX                  ; increment player x position
+                clc                     ; and hold it...
+                adc XI
+                sta CKX
                 cmp #159                ; offscreen?
-                bcs _jgstk              ;   yes!
+                bcs _jGetStick          ;   yes! ignore
 
                 sta PLOTX               ;   no, save it
                 sec
                 sbc XD,X
                 sta PXWC
-                lda PY                  ; increment
-                clc                     ; player y
-                adc YI                  ; position and
-                sta CKY                 ; hold it...
+
+                lda PY                  ; increment player y position
+                clc                     ; and hold it...
+                adc YI
+                sta CKY
                 cmp #85                 ; offscreen?
-                bcs _jgstk              ;   yes!
+                bcs _jGetStick          ;   yes! ignore
 
                 sta PLOTY               ;   no, save it
                 sec
                 sbc YD,X
                 sta PYWC
-                jsr PlotCalc            ; locate new player
 
-                ldy #0                  ; position.
+                jsr PlotCalc            ; locate new player position
+
+                ldy #0
                 lda BitsOn,X
                 and (LO),Y
                 sta CKV                 ; save the 'locate'.
                 stx CKVX
+
                 lda PXWC                ; check the
                 sta PLOTX               ; position next
                 lda PYWC                ; to the one we're
@@ -320,14 +329,14 @@ _gotstk         lda #4                  ; set up the
                 pha                     ; and save it!
                 lda InputFlags          ; trigger pressed?
                 and #$10
-                bne _notdrn             ;   no!
+                bne _notdrawing         ;   no!
 
                 pla                     ; ok to draw?
                 bne _repeat             ;   no!!
 
                 jmp DrawFunc            ;   yes, go draw.
 
-_notdrn         pla                     ; not drawing--are we
+_notdrawing     pla                     ; not drawing--are we
                 cmp COLOR1,X            ; on color 1?
                 bne _repeat             ;   no, try again
 
@@ -338,22 +347,22 @@ _notdrn         pla                     ; not drawing--are we
 
                 lda CKX                 ; all's well...
                 sta PX                  ; update px
-                lda CKY                 ; and
-                sta PY                  ; py,
-_repeat         jmp GetStick            ; get stick.
+                lda CKY                 ; and py
+                sta PY
+_repeat         jmp GetStick            ; get stick
 
                 .endproc
 
 
 ;-------------------------------------
-; THIS HANDLES THE DRAW FUNCTION.
+; Handles the draw function.
 ;-------------------------------------
 DrawFunc        .proc
                 lda isDrawActive        ; already drawing?
                 bne _drawok             ;   yes!
 
-                sta MOVIX               ;   no, this is the first time--
-                lda STKHLD              ; set up initial drawing variables.
+                sta MoveIndex           ;   no, this is the first time--
+                lda StickHold           ; set up initial drawing variables.
                 sta DIR
 
                 lda #TRUE
@@ -364,10 +373,12 @@ DrawFunc        .proc
                 sta INIX
                 sta MINX
                 sta MAXX
+
                 lda PY
                 sta INIY
                 sta MINY
                 sta MAXY
+
 _drawok         lda CKV                 ; did we
                 ldx CKVX                ; run into another
                 cmp COLOR2,X            ; color 2?
@@ -375,12 +386,12 @@ _drawok         lda CKV                 ; did we
 
                 jmp Crash               ; crraaassshhh!
 
-_nocrash        ldx MOVIX               ; update the tracking
-                lda STKHLD              ; tables with direction
-                cmp DIR,X               ; information.
+_nocrash        ldx MoveIndex           ; update the tracking tables
+                lda StickHold           ; with direction information
+                cmp DIR,X
                 beq _samdir
 
-                inc MOVIX
+                inc MoveIndex
                 inx
                 sta DIR,X
                 lda #0
@@ -388,9 +399,10 @@ _nocrash        ldx MOVIX               ; update the tracking
 _samdir         inc LGTH,X
                 lda #3
                 sta BDCNT
-                lda PX                  ; now plot the
-                sta PLOTX               ; line we're
-                lda PY                  ; drawing...
+
+                lda PX                  ; now plot the line we're drawing...
+                sta PLOTX
+                lda PY
                 sta PLOTY
 _ccloop         jsr PlotCalc
 
@@ -402,7 +414,7 @@ _ccloop         jsr PlotCalc
                 dec BDCNT
                 beq _ckcolr
 
-                ldy MOVIX
+                ldy MoveIndex
                 ldx DIR,Y
                 lda XD,X
                 clc
@@ -479,9 +491,9 @@ _newlvl         lda LEVEL               ; if level < 15 then
 
                 inc LEVEL               ; increment level
 
-;
-; INCREASE SCORE HERE
-;
+; --------------
+; Increase score
+; --------------
 _nolinc         asl LOWK                ; score inc =
                 rol HIWK                ; tgt-cur * 2
                 lda #$FF                ; don't place
@@ -534,7 +546,7 @@ _shslp          lda SCORE,X             ; score in
 
 
 ;--------------------------------------
-; THIS SECTION HANDLES PLAYER'S DEATH
+; Handles player's death
 ;--------------------------------------
 Crash           .proc
                 lda #0                  ; no warble sound
@@ -542,19 +554,19 @@ Crash           .proc
                 sta SID_CTRL2
                 sta SID_CTRL3
 
-                lda #TRUE               ; no player color
-                sta isPreventColorChange ; change in vbi
+                lda #TRUE               ; no player color change in vbi
+                sta isPreventColorChange
 
-                lda #15                 ; set brightness of
-                sta DEDBRT              ; player death.
-_timrst         lda #5                  ; set death timer
-                sta TIMER               ; to 5 jiffies.
-_deadcc         lda DEDBRT              ; move brightness
-                sta SID_CTRL1           ; to death sound volume ; volume=variable, distortion=0
+                lda #15                 ; set brightness of player death
+                sta DEDBRT
+_timrst         lda #5                  ; set death timer to 5 jiffies
+                sta TIMER
+_deadcc         lda DEDBRT              ; move brightness to death sound volume
+                sta SID_CTRL1           ; volume=variable, distortion=0
 
                 .randomByte
-                and #$1F                ; death sound
-                sta SID_FREQ1           ; frequency
+                and #$1F                ; death sound frequency
+                sta SID_FREQ1
 
                 .randomByte
                 and #$F0                ; death color
@@ -562,7 +574,7 @@ _deadcc         lda DEDBRT              ; move brightness
                 ;sta COLPF1             ; put in line color
                 ;sta COLPM3             ; and player color
                 lda TIMER               ; timer done yet?
-                bne _deadcc             ; no, go change color.
+                bne _deadcc             ;   no, go change color.
 
                 dec DEDBRT              ; decrement brightness
                 bpl _timrst             ; if more, go do it.
@@ -573,7 +585,7 @@ _deadcc         lda DEDBRT              ; move brightness
                 sta panelLives          ; and display!
 
                 cmp #$30                ; zero lives?
-                bne RandomLocation      ; no!
+                bne RandomLocation      ;   no!
 
 ;   we're completely dead, show 'game over' message
                 lda #TRUE
@@ -599,21 +611,21 @@ _releas         lda CONSOL              ; key pressed, now
 
 
 ;--------------------------------------
-; THIS SECTION PLACES PLAYER AT A RANDOM
-; LOCATION IF THERE ARE MORE LIVES LEFT.
+; Places player at a random location if
+; there are more lives left.
 ;--------------------------------------
 RandomLocation  .proc
-                lda #TRUE               ; don't show
-                sta isHidePlayer        ; player
+                lda #TRUE               ; don't show player
+                sta isHidePlayer
 _newloc         .randomByte             ; get random x
-                and #$FE                ; must be even
-                cmp #159                ; and on screen
+                and #$FE                ; must be even and on screen
+                cmp #159
                 bcs _newloc
 
                 sta PLOTX
 _cshy           .randomByte             ; get random y
-                and #$7E                ; must be even
-                cmp #85                 ; and on screen
+                and #$7E                ; must be even and on screen
+                cmp #85
                 bcs _cshy
 
                 sta PLOTY
@@ -627,10 +639,10 @@ _cshy           .randomByte             ; get random y
 
                 jsr SpritesClear        ; it's ok, clear p/m
 
-                lda PLOTX               ; save
-                sta PX                  ; the player's
-                lda PLOTY               ; new
-                sta PY                  ; coordinates.
+                lda PLOTX               ; save the player's
+                sta PX                  ; new coordinates
+                lda PLOTY
+                sta PY
 
                 lda #FALSE              ; redraw the
                 sta RDRCOL              ; player's track
@@ -650,8 +662,8 @@ _cshy           .randomByte             ; get random y
                 and (LO),Y
                 ora COLOR1,X
                 sta (LO),Y
-_jctrk          ;lda #$24               ; restore draw line
-                ;sta COLPF1             ; color
+_jctrk          ;lda #$24               ; restore draw line color
+                ;sta COLPF1
 
                 lda #FALSE
                 sta isPreventColorChange
@@ -735,7 +747,7 @@ _jnrd           jmp _redylp
 
 _nxtx           inc X
                 lda X
-                cmp MOVIX
+                cmp MoveIndex
                 beq _jrxlp
 
                 bcs _endrd
