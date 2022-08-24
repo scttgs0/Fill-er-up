@@ -1,8 +1,8 @@
 ;======================================
-; MOVES THE STAR AROUND THE PLAYFIELD
+; Moves the star around the playfield
 ;--------------------------------------
-; THE STAR IS ROTATED AND PLOTTED
-; (IN A PLAYER) IN THE VBI.
+; The star is rotated and plotted
+; (in a player) in the vbi.
 ;======================================
 MoveStar        .proc
                 lda vStarMoveTimer      ; time to move?
@@ -13,28 +13,28 @@ MoveStar        .proc
 _movestar       lda StarSpeed           ; set movement timer
                 sta vStarMoveTimer      ; with star speed
 
-                lda StarVertPos         ; adjust P/M coordinates to
-                sec                     ; match playfield plotting
-                sbc #13                 ; coordinates.
+                lda StarVertPos         ; adjust P/M coordinates to match
+                sec                     ; playfield plotting coordinates.
+                sbc #13                 ; TODO:
                 sta StarLiteralY
 
                 lda StarHorzPos
                 sec
-                sbc #44
+                sbc #44                 ; TODO:
                 sta StarLiteralX
 
                 .randomByte             ; want to change the star's direction?
                 cmp #240
-                bcc _samedir            ;   no, use same.
+                bcc _samedir            ;   no, use same
 
 _newdir         .randomByte             ; get random direction
                 and #7
                 jmp _dirchk
 
-_samedir        lda StarDirection       ; get old direction.
+_samedir        lda StarDirection       ; get old direction
 
 _dirchk         tax                     ; check to see if star will
-                sta TempDirection       ; bump into any playfield object.
+                sta TempDirection       ; bump into any playfield object
 
                 lda StarLiteralX
                 clc
@@ -55,11 +55,11 @@ _dirchk         tax                     ; check to see if star will
 
                 lda #15                 ; hit something,
                 sta vBumpSndCount       ; start bump sound and
-                bne _newdir             ; get new direction.
+                bne _newdir             ; get new direction
 
-_wayclear       lda PLOTX               ; adjust star coordinates
-                clc                     ; back to p/m coordinates
-                adc #44                 ; from playfield.
+_wayclear       lda PLOTX               ; adjust star coordinates back to
+                clc                     ; p/m coordinates from playfield
+                adc #44                 ; TODO:
                 sta StarHorzPos
 
 ;   enforce limits
@@ -71,7 +71,7 @@ _wayclear       lda PLOTX               ; adjust star coordinates
 
 _1              lda PLOTY
                 clc
-                adc #13
+                adc #13                 ; TODO:
                 sta StarVertPos
 
 ;   enforce limits
