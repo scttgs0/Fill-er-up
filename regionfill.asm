@@ -79,6 +79,10 @@ _fillit         lda FX
                 lda (LO),Y
                 ora COLOR3,X
                 sta (LO),Y
+
+                lda #TRUE
+                sta isDirtyPlayfield
+
                 inc ScoreTally
                 jsr Locate
 
@@ -184,6 +188,10 @@ _stofx          lda FX
                 lda BitsOn,X
                 ora (LO),Y
                 sta (LO),Y
+
+                lda #TRUE
+                sta isDirtyPlayfield
+
                 inc ScoreTally
                 lda #2
                 rts

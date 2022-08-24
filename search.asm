@@ -276,5 +276,8 @@ _endmm2         jsr PlotCalc
                 and (LO),Y
                 ora COLOR2,X
                 sta (LO),Y
+
+                lda #TRUE
+                sta isDirtyPlayfield
                 rts
                 .endproc

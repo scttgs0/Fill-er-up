@@ -154,7 +154,8 @@ _drawln         jsr PlotCalc            ; alters X:= pixel offset
                 dec BORNUM
                 bpl _border
 
-                jsr BlitPlayfield
+                lda #TRUE
+                sta isDirtyPlayfield
 
 ; ----------------------------------
 ; This section starts off each level
@@ -224,7 +225,14 @@ GetStick        .proc
 _wait1          lda isPaused            ; game paused?
                 bne _wait1              ;   yes, loop and wait.
 
-                lda #$FD                ; do 'warble' sound
+                lda isDirtyPlayfield
+                beq _1
+
+                jsr BlitPlayfield
+
+                stz isDirtyPlayfield
+
+_1              lda #$FD                ; do 'warble' sound
                 sta SID_FREQ1           ; using sound
                 lda #$FE                ; channels 1-3
                 sta SID_FREQ2
@@ -411,6 +419,10 @@ _ccloop         jsr PlotCalc
                 and BitsOff,X
                 ora COLOR2,X            ; in color 2.
                 sta (LO),Y
+
+                lda #TRUE
+                sta isDirtyPlayfield
+
                 dec BDCNT
                 beq _ckcolr
 
@@ -662,6 +674,10 @@ _cshy           .randomByte             ; get random y
                 and (LO),Y
                 ora COLOR1,X
                 sta (LO),Y
+
+                lda #TRUE
+                sta isDirtyPlayfield
+
 _jctrk          ;lda #$24               ; restore draw line color
                 ;sta COLPF1
 
@@ -712,6 +728,10 @@ _times3         lda REX
                 lda BitsOff,X
                 and (LO),Y
                 sta (LO),Y
+
+                lda #TRUE
+                sta isDirtyPlayfield
+
                 jmp _setnrp
 
 _endrd          lda #FALSE
@@ -722,6 +742,10 @@ _rdc1           lda BitsOff,X
                 and (LO),Y
                 ora COLOR1,X
                 sta (LO),Y
+
+                lda #TRUE
+                sta isDirtyPlayfield
+
 _setnrp         dec TIMES
                 beq _nxty
 
