@@ -1,13 +1,12 @@
-HandleIrq       .m16i16
+HandleIrq       .proc
+                .m8i8
                 pha
                 phx
                 phy
 
-                .m8i8
                 lda @l INT_PENDING_REG1
-                and #FNX1_INT00_KBD
-                cmp #FNX1_INT00_KBD
-                bne _1
+                bit #FNX1_INT00_KBD
+                beq _1
 
                 jsl KeyboardHandler
 
@@ -15,23 +14,22 @@ HandleIrq       .m16i16
                 sta @l INT_PENDING_REG1
 
 _1              lda @l INT_PENDING_REG0
-                and #FNX0_INT00_SOF
-                cmp #FNX0_INT00_SOF
-                bne _XIT
+                bit #FNX0_INT00_SOF
+                beq _XIT
 
                 jsl VBIHandler
 
                 lda @l INT_PENDING_REG0
                 sta @l INT_PENDING_REG0
 
-_XIT            .m16i16
-                ply
+_XIT            ply
                 plx
                 pla
 
-                .m8i8
 HandleIrq_END   rti
                 ;jmp IRQ_PRIOR
+
+                .endproc
 
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -316,7 +314,7 @@ KEY_SPACE       = $39
                 lda JOYSTICK0           ; read joystick0
                 and #$1F
                 cmp #$1F
-                beq _pause                ; when no activity, keyboard is alternative
+                beq _pause              ; when no activity, keyboard is alternative
 
                 sta InputFlags          ; joystick activity -- override keyboard input
                 lda #itJoystick

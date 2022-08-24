@@ -685,7 +685,7 @@ InitIRQs        .proc
 ;   enable vertical blank interrupt
 
                 .m8i8
-                ldx #HandleIrq_END-HandleIrq
+                ldx #HandleIrq.HandleIrq_END-HandleIrq
 _relocate       ;lda @l $024000,X        ; HandleIrq address
                 ;sta @l $002000,X        ; new address within Bank 00
                 ;dex
@@ -732,6 +732,8 @@ SetFont         .proc
                 phx
                 phy
 
+                ; bra _XIT  ; DEBUG: helpful if you need to see the trace
+
                 .m8i8
                 lda #<GameFont
                 sta zpSource
@@ -761,7 +763,7 @@ _next1          lda [zpSource],Y
                 dex
                 bne _nextPage
 
-                ply
+_XIT            ply
                 plx
                 pla
                 plp
