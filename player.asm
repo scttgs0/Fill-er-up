@@ -179,7 +179,7 @@ _drawln         jsr PlotCalc            ; alters X:= pixel offset
                 jsr ConvertDecimal      ; convert level #
 
                 lda DECIMAL+1           ; get decimal level #
-                ora #$30                ; add color
+                ora #$30                ; convert to ascii
                 sta panelLevel          ; put in score line
                 lda DECIMAL             ; same for 2nd
                 ora #$30                ; level #
@@ -477,7 +477,7 @@ _endlin         lda #FALSE              ; we aren't
                 sta LOWK
                 lda CurrentHI
                 sta HIWK
-                lda #15                 ; put at 15th
+                lda #14                 ; put at 14th
                 sta SLLOC               ; pos. in scoreline1
                 jsr ConvertDecimal      ; convert to decimal
 
@@ -531,12 +531,13 @@ _nxspos         iny
                 dex
                 bpl _scolp
 
-                ldx #5                  ; now place the
-_shslp          lda SCORE,X             ; score in
-                ora #$10                ; score line #2
+;   now place the score in score line #2
+                ldx #5                  ; 6-digit score
+_showscore      lda SCORE,X
+                ora #$30                ; convert to ascii
                 sta panelScore,X
                 dex
-                bpl _shslp
+                bpl _showscore
 
                 lda #TRUE               ; stop VBI for a moment
                 sta isFillOn
@@ -593,7 +594,7 @@ _deadcc         lda DEDBRT              ; move brightness to death sound volume
 
                 dec LIVES               ; 1 less life
                 lda LIVES               ; get # lives
-                ora #$30                ; add color
+                ora #$30                ; convert to ascii
                 sta panelLives          ; and display!
 
                 cmp #$30                ; zero lives?

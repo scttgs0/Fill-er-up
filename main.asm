@@ -67,9 +67,9 @@ _zeroscore      sta panelScore,X
                 sta hasDrawn
 
                 ldx #5                  ; let's zero out the score counter...
-_CMSLP          sta SCORE,X
+_zeroScoreVal   sta SCORE,X
                 dex
-                bpl _CMSLP
+                bpl _zeroScoreVal
 
                 sta LEVEL               ; and level #!
 

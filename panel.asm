@@ -46,7 +46,7 @@ _showit         ldx #$4
                 bmi _XIT
 
 _next2          lda DECIMAL,X
-                ora #$30
+                ora #$30                ; convert to ascii
                 sta ScoreLine1,Y
                 iny
                 dex
