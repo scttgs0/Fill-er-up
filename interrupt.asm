@@ -1,8 +1,9 @@
 HandleIrq       .proc
-                .m8i8
+                .m16i16
                 pha
                 phx
                 phy
+                .m8i8
 
                 lda @l INT_PENDING_REG1
                 bit #FNX1_INT00_KBD
@@ -22,9 +23,11 @@ _1              lda @l INT_PENDING_REG0
                 lda @l INT_PENDING_REG0
                 sta @l INT_PENDING_REG0
 
-_XIT            ply
+_XIT            .m16i16
+                ply
                 plx
                 pla
+                .m8i8
 
 HandleIrq_END   rti
                 ;jmp IRQ_PRIOR

@@ -267,7 +267,7 @@ InitBitmap      .proc
 
 
 ;======================================
-; BlitPlayfield
+; Unpack the playfield into Video RAM
 ;======================================
 SetVideoRam     .proc
                 php
@@ -295,6 +295,7 @@ _nextByte       ldy zpIndex1
 
                 inc zpIndex1            ; increment the byte counter (source pointer)
                 bne _1
+
                 inc zpIndex1+1
 _1              inc zpIndex3            ; increment the column counter
 
@@ -352,7 +353,7 @@ _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
                 cpx #40
                 bcc _checkEnd
 
-                inc zpTemp2     ; HACK:
+                inc zpTemp2     ; HACK: exit criterian
                 lda zpTemp2
                 cmp #12
                 beq _XIT
@@ -368,8 +369,8 @@ _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
                 .m8
 
 _checkEnd       ldx zpIndex1
-                cpx #$1E0               ; 12 source lines... = 24 destination lines (~8K)
-                bcc _nextByte 
+                cpx #$1E0               ; 12 source lines (40 bytes/line)... = 24 destination lines (~8K)
+                bcc _nextByte
 
 _XIT            .i8
 
@@ -382,7 +383,7 @@ _XIT            .i8
 
 
 ;======================================
-; 
+;
 ;======================================
 BlitVideoRam    .proc
                 php
@@ -390,7 +391,7 @@ BlitVideoRam    .proc
 
                 .m16
 
-                lda #$1E00              ; Set the size
+                lda #$1E00              ; 24 lines (320 bytes/line)
                 sta zpSize
                 lda #0
                 sta zpSize+2
@@ -410,7 +411,7 @@ BlitVideoRam    .proc
 
 
 ;======================================
-; 
+;
 ;======================================
 BlitPlayfield   .proc
                 php
@@ -418,7 +419,7 @@ BlitPlayfield   .proc
                 phx
                 phy
 
-                ldy #7
+                ldy #7                  ; 8 chuncks of 24 lines
                 ldx #0
 
 _nextBank       .m16
