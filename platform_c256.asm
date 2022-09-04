@@ -634,7 +634,7 @@ Copy2VRAM       .proc
                 phb
                 .setbank `SDMA_SRC_ADDR
                 .setdp zpSource
-                .m8
+                .m8i8
 
     ; Set SDMA to go from system to video RAM, 1D copy
                 lda #sdcSysRAM_Src|sdcEnable
@@ -655,7 +655,6 @@ Copy2VRAM       .proc
                 ldx zpDest+2
                 stx VDMA_DST_ADDR+2
 
-                .m16
                 lda zpSize              ; Set the size of the block
                 sta SDMA_SIZE
                 sta VDMA_SIZE
@@ -694,7 +693,17 @@ wait_vdma       lda VDMA_STATUS         ; Get the VDMA status
                 plp
                 rts
 
-vdma_err        brk
+vdma_err        lda #0                  ; Make sure DMA registers are cleared
+                sta SDMA0_CTRL
+                sta VDMA_CTRL
+
+                .setdp $0000
+                .setbank $00
+                .m8i8
+                plb
+                plp
+
+                jmp Copy2VRAM           ; retry
                 .endproc
 
 
@@ -705,7 +714,6 @@ InitIRQs        .proc
                 pha
 
 ;   enable vertical blank interrupt
-
                 .m8i8
                 ldx #HandleIrq.HandleIrq_END-HandleIrq
 _relocate       ;lda @l $024000,X        ; HandleIrq address
@@ -754,7 +762,8 @@ SetFont         .proc
                 phx
                 phy
 
-                ; bra _XIT  ; DEBUG: helpful if you need to see the trace
+;   DEBUG: helpful if you need to see the trace
+                ; bra _XIT
 
                 .m8i8
                 lda #<GameFont
