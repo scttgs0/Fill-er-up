@@ -15,9 +15,9 @@
 
                 .cpu "65816"
 
-                .include "equates_system_c256.asm"
-                .include "equates_zeropage.asm"
-                .include "equates_game.asm"
+                .include "equates_system_c256.inc"
+                .include "equates_zeropage.inc"
+                .include "equates_game.inc"
 
                 .include "macros_65816.asm"
                 .include "macros_frs_graphic.asm"
