@@ -1,3 +1,4 @@
+
 randomByte      .macro
                 lda GABE_RNG_DAT_LO
                 and #$FF

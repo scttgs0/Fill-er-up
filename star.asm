@@ -1,8 +1,9 @@
+
 ;======================================
 ; Moves the star around the playfield
 ;--------------------------------------
 ; The star is rotated and plotted
-; (in a player) in the vbi.
+; (in a player) in the VBI.
 ;======================================
 MoveStar        .proc
                 lda vStarMoveTimer      ; time to move?

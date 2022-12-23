@@ -1,3 +1,4 @@
+
 VRAM            = $B00000               ; First byte of video RAM
 
 SPRITES         = VRAM

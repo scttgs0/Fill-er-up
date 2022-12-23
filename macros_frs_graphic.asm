@@ -1,3 +1,4 @@
+
 frsGraphics     .macro
                 lda #\1
                 sta MASTER_CTRL_L
