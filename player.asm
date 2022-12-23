@@ -1,3 +1,4 @@
+
 ;======================================
 ; Clear out the P/M area
 ;======================================
@@ -109,15 +110,18 @@ _next2          sta (LO),Y
                 cpx #86
                 bne _next1
 
-; -----------------------
+; -------------------------------------
 ; Draw the color 1 border
-; -----------------------
-                lda #3                  ; this routine
-                sta BORNUM              ; draws the 4 lines
+; -------------------------------------
+; this section draws the 4 lines that
+; make the white border on the screen.
+; -------------------------------------
+                lda #3
+                sta BORNUM
 
-_border         ldx BORNUM              ; that make up the
-                lda BXSTRT,X            ; white gr.7 border
-                sta PLOTX               ; on the screen.
+_border         ldx BORNUM
+                lda BXSTRT,X
+                sta PLOTX
 
                 lda BYSTRT,X
                 sta PLOTY
@@ -297,8 +301,11 @@ _gotstk         lda #4                  ; reset the movement timer
                 clc                     ; and hold it...
                 adc XI
                 sta CKX
-                cmp #159                ; offscreen?
+                cmp #155                ; offscreen?
                 bcs _jGetStick          ;   yes! ignore
+
+                cmp #4                  ; offscreen?
+                bcc _jGetStick          ;   yes! ignore
 
                 sta PLOTX               ;   no, save it
                 sec
