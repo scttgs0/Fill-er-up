@@ -3,6 +3,12 @@ randomByte      .macro
                 and #$FF
                 .endmacro
 
+randomByteY     .macro
+                .setbank $AF
+                ldy GABE_RNG_DAT_LO
+                .setbank $00
+                .endmacro
+
 randomWord      .macro
                 lda GABE_RNG_DAT_LO
                 .endmacro
