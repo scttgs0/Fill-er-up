@@ -1,0 +1,14 @@
+.*
+obj/
+ref/
+*.txt
+*.lst
+*.lbl
+*.bin
+*.rom
+*.car
+*.atr
+*.atx
+*.xex
+*.hex
+*.pgx
