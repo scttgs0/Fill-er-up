@@ -67,7 +67,6 @@ v_renderLine    .var (CharResY-5)*CharResX
 ;---
 
                 php
-                .m8i8
 
 ;   reset color for two 40-char lines
                 ldx #$FF

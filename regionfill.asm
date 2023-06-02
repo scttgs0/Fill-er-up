@@ -11,8 +11,8 @@
 ;======================================
 FillRegion      .proc
                 lda #0                  ; turn off
-                sta SID_CTRL2           ; sound channels
-                sta SID_CTRL3           ; 2 and 3.
+                sta SID1_CTRL2           ; sound channels
+                sta SID1_CTRL3           ; 2 and 3.
 
                 lda MAXY                ; initialize
                 sec                     ; the fill
@@ -148,10 +148,10 @@ Locate          .proc
                 sta C2TALY
 
                 lda #$86                ; volume=6, distortion=4
-                sta SID_CTRL1
+                sta SID1_CTRL1
 
                 lda FILFRQ              ; variable frequency
-                sta SID_FREQ1
+                sta SID1_FREQ1
                 beq _noffdc
 
                 dec FILFRQ

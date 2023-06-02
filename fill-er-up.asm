@@ -13,34 +13,15 @@
 ;       ours    320x240                 ; 76,800 bytes [$12C00 = 300 pages]
 ;   Playfield   318x170
 
-                .cpu "65816"
+                .cpu "65c02"
 
-                .include "equates_system_c256.inc"
-                .include "equates_zeropage.inc"
-                .include "equates_game.inc"
+                .include "system_f256jr.equ"
+                .include "zeropage.equ"
+                .include "game.equ"
 
-                .include "macros_65816.asm"
-                .include "macros_frs_graphic.asm"
-                .include "macros_frs_mouse.asm"
-                .include "macros_frs_random.asm"
-
-
-;--------------------------------------
-;--------------------------------------
-                * = START-40
-;--------------------------------------
-                .text "PGX"
-                .byte $01
-                .dword BOOT
-
-BOOT            clc
-                xce
-                .m8i8
-                .setdp $0000
-                .setbank $00
-                cld
-
-                jmp START
+                .include "frs_jr_graphic.mac"
+                .include "frs_jr_mouse.mac"
+                .include "frs_jr_random.mac"
 
 
 ;--------------------------------------
@@ -48,11 +29,24 @@ BOOT            clc
                 * = $2000
 ;--------------------------------------
 
+                .byte $F2,$56           ; signature
+                .byte $04               ; block count
+                .byte $01               ; start at block1
+                .addr BOOT              ; execute address
+                .word $0000             ; version
+                .word $0000             ; kernel
+                                        ; binary name
+                .text 'Fill-er Up',$00
+
+BOOT            cld
+                ldx #$FF                ; initialize the stack
+                txs
+                jmp START
+
+;--------------------------------------
+;--------------------------------------
+
                 .include "main.asm"
-
-
-;--------------------------------------
-;--------------------------------------
 
                 .include "player.asm"
                 .include "panel.asm"
@@ -66,24 +60,28 @@ BOOT            clc
 ;--------------------------------------
 
                 .include "interrupt.asm"
-                .include "platform_c256.asm"
-
+                .include "platform_f256jr.asm"
 
 ;--------------------------------------
                 .align $100
 ;--------------------------------------
 
-                .include "DATA.asm"
+                .include "DATA.inc"
 
 
 ;--------------------------------------
                 .align $1000
 ;--------------------------------------
 
-GameFont        .include "FONT.asm"
+GameFont        .include "FONT.inc"
 GameFont_end
 
-Palette         .include "PALETTE.asm"
+
+;--------------------------------------
+                .align $100
+;--------------------------------------
+
+Palette         .include "PALETTE.inc"
 Palette_end
 
 
@@ -91,7 +89,7 @@ Palette_end
                 .align $100
 ;--------------------------------------
 
-Stamps          .include "SPRITES.asm"
+Stamps          .include "SPRITES.inc"
 Stamps_end
 
 Playfield       .fill 86*40,$00
@@ -99,7 +97,7 @@ Playfield       .fill 86*40,$00
 
 ;--------------------------------------
 ;--------------------------------------
-                .align $100
+                .align $1000
 ;--------------------------------------
 
 Video8K         .fill 8192,$00

@@ -232,21 +232,21 @@ _wait1          lda isPaused            ; game paused?
                 lda isDirtyPlayfield
                 beq _1
 
-                jsr BlitPlayfield
+                ; jsr BlitPlayfield
 
                 stz isDirtyPlayfield
 
 _1              lda #$FD                ; do 'warble' sound
-                sta SID_FREQ1           ; using sound
+                sta SID1_FREQ1           ; using sound
                 lda #$FE                ; channels 1-3
-                sta SID_FREQ2
+                sta SID1_FREQ2
                 lda #$FF
-                sta SID_FREQ3
+                sta SID1_FREQ3
 
                 lda #$A3                ; volume=3, distortion=5 (pure tone)
-                sta SID_CTRL1
-                sta SID_CTRL2
-                sta SID_CTRL3
+                sta SID1_CTRL1
+                sta SID1_CTRL2
+                sta SID1_CTRL3
 
                 lda isDead              ; did star hit us?
                 beq _alive              ;   no!
@@ -570,9 +570,9 @@ _showscore      lda SCORE,X
 ;--------------------------------------
 Crash           .proc
                 lda #0                  ; no warble sound
-                sta SID_CTRL1           ; volume=0, distortion=0
-                sta SID_CTRL2
-                sta SID_CTRL3
+                sta SID1_CTRL1           ; volume=0, distortion=0
+                sta SID1_CTRL2
+                sta SID1_CTRL3
 
                 lda #TRUE               ; no player color change in vbi
                 sta isPreventColorChange
@@ -582,11 +582,11 @@ Crash           .proc
 _timrst         lda #5                  ; set death timer to 5 jiffies
                 sta TIMER
 _deadcc         lda DEDBRT              ; move brightness to death sound volume
-                sta SID_CTRL1           ; volume=variable, distortion=0
+                sta SID1_CTRL1           ; volume=variable, distortion=0
 
                 .randomByte
                 and #$1F                ; death sound frequency
-                sta SID_FREQ1
+                sta SID1_FREQ1
 
                 .randomByte
                 and #$F0                ; death color

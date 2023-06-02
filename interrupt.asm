@@ -1,34 +1,35 @@
 
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Main IRQ Handler
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 HandleIrq       .proc
-                .m16i16
                 pha
                 phx
                 phy
-                .m8i8
 
-                lda @l INT_PENDING_REG1
+                lda INT_PENDING_REG1
                 bit #FNX1_INT00_KBD
                 beq _1
 
-                jsl KeyboardHandler
+                jsr KeyboardHandler
 
-                lda @l INT_PENDING_REG1
-                sta @l INT_PENDING_REG1
+                lda INT_PENDING_REG1
+                sta INT_PENDING_REG1
 
-_1              lda @l INT_PENDING_REG0
+_1              lda INT_PENDING_REG0
                 bit #FNX0_INT00_SOF
                 beq _XIT
 
-                jsl VBIHandler
+                jsr VbiHandler
 
-                lda @l INT_PENDING_REG0
-                sta @l INT_PENDING_REG0
+                lda INT_PENDING_REG0
+                sta INT_PENDING_REG0
 
-_XIT            .m16i16
-                ply
+_XIT            ply
                 plx
                 pla
-                .m8i8
 
 HandleIrq_END   rti
                 ;jmp IRQ_PRIOR
@@ -61,15 +62,11 @@ KEY_DOWN        = $50
 KEY_CTRL        = $1D                   ; fire button
 ;---
 
-                .m16i16
                 pha
                 phx
                 phy
 
-                .m8i8
-                .setbank $00
-
-                lda KBD_INPT_BUF
+                lda PS2_KEYBD_IN
                 pha
                 sta KEYCHAR
 
@@ -286,31 +283,26 @@ _8r             pla
 _CleanUpXIT     stz KEYCHAR
                 pla
 
-_XIT            .m16i16
-                ply
+_XIT            ply
                 plx
                 pla
-
-                .m8i8
-                rtl
+                rts
                 .endproc
 
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; VBI ROUTINE
+; Handle Vertical Blank Interrupt (SOF)
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-VBIHandler      .proc
+VbiHandler      .proc
 KEY_SPACE       = $39
 ;---
 
                 php
 
-                .m16i16
                 pha
                 phx
                 phy
 
-                .m8i8
                 lda JIFFYCLOCK          ; increment the jiffy clock each VBI
                 inc A
                 sta JIFFYCLOCK
@@ -415,7 +407,7 @@ _11             sta StarRotPos          ; save rot. pos.
 _12             ;ldy StarRotPos
                 ;ldx StarVertPos
 
-                .m16
+                ; .m16
                 lda StarHorzPos         ; set star's horiz. pos.
                 and #$FF                ; byte->word
                 asl A                   ; *2, account for double-pixel display
@@ -436,7 +428,7 @@ _12             ;ldy StarRotPos
                 tay
                 lda StarRotTbl,Y
                 sta SP01_ADDR
-                .m8
+                ; .m8
 
                 lda zpPlayerColorClock  ; is it time to change color?
                 cmp JIFFYCLOCK
@@ -450,7 +442,7 @@ _12             ;ldy StarRotPos
 _13             lda isHidePlayer        ; ok to show player?
                 bne _XIT                ;   no, exit VBI
 
-                .m16
+                ; .m16
                 lda PX                  ; set player's horizontal position
                 and #$FF                ; byte->word
                 asl A                   ; *2, account for double-pixel display
@@ -464,7 +456,7 @@ _13             lda isHidePlayer        ; ok to show player?
                 clc                     ; +32, account for off-screen border
                 adc #32+24-2            ; +24, account for playfield vertical displacement
                 sta SP00_Y_POS          ; -2, distance to player center
-                .m8
+                ; .m8
 
                 lda isPreventColorChange ; color change ok?
                 bne _XIT                ;   no, exit VBI
@@ -489,12 +481,10 @@ _nextColor      lda palColor0,X
 
                 jsr InitLUT
 
-_XIT            .m16i16
-                ply
+_XIT            ply
                 plx
                 pla
 
-                .m8i8
                 plp
-                rtl
+                rts
                 .endproc

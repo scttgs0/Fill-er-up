@@ -5,33 +5,8 @@
 ;--------------------------------------
 ;--------------------------------------
 START           .proc
-                jsr Random_Seed
-
-                .frsGraphics mcTextOn|mcOverlayOn|mcGraphicsOn|mcBitmapOn|mcSpriteOn,mcVideoMode320
-                .frsMouse_off
-                .frsBorder_off
-
-                jsr InitLUT
-                jsr InitCharLUT
-
-                lda #<CharResX
-                sta COLS_PER_LINE
-                lda #>CharResX
-                sta COLS_PER_LINE+1
-                lda #CharResX
-                sta COLS_VISIBLE
-
-                lda #<CharResY
-                sta LINES_MAX
-                lda #>CharResY
-                sta LINES_MAX+1
-                lda #CharResY
-                sta LINES_VISIBLE
-
-                jsr SetFont
-                jsr ClearScreen
-
-                jsr InitSID             ; init sounds
+                jsr InitSystemVectors
+                ; jsr InitMMU
 
                 lda #TRUE               ; don't show player or star
                 sta isHidePlayer        ; we still must clear P/M area
@@ -39,6 +14,26 @@ START           .proc
 
                 lda #FALSE
                 sta isGameOver
+
+                jsr RandomSeedQuick
+
+                .frsGraphics mcTextOn|mcOverlayOn|mcGraphicsOn|mcBitmapOn|mcSpriteOn,mcVideoMode240|mcTextDoubleX|mcTextDoubleY
+                .frsMouse_off
+                .frsBorder_off
+
+
+                stz BITMAP0_CTRL        ; disable all bitmaps
+                stz BITMAP1_CTRL
+                stz BITMAP2_CTRL
+                stz LAYER_ORDER_CTRL_0
+                stz LAYER_ORDER_CTRL_1
+
+                jsr InitGfxPalette
+                jsr InitTextPalette
+                jsr SetFont
+                jsr ClearScreen
+
+                jsr InitSID             ; init sounds
 
                 jsr InitBitmap
                 jsr InitSprites
@@ -51,15 +46,15 @@ START           .proc
 
                 lda #$30                ; now let's zero out the score areas!
                 ldx #4                  ; 5-digit values
-_zerogoal       sta panelTarget,X
+_zeroGoal       sta panelTarget,X
                 sta panelCurrent,X
                 dex
-                bpl _zerogoal
+                bpl _zeroGoal
 
                 ldx #5                  ; 6-digit value
-_zeroscore      sta panelScore,X
+_zeroScore      sta panelScore,X
                 dex
-                bpl _zeroscore
+                bpl _zeroScore
 
                 lda #FALSE              ; these items must be set to zero on startup or
                 sta isFillOn            ; else we'll wind up with nasty things happening!
@@ -81,7 +76,7 @@ _zeroScoreVal   sta SCORE,X
                 ora #$30                ; convert to ascii
                 sta panelLives          ; and put them in the score line
 
-                jsr InitIRQs
+                ; jsr InitIRQs
 
                 lda JIFFYCLOCK          ; initialize the player color clock
                 clc
