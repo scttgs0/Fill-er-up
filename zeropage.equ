@@ -37,9 +37,9 @@ itKeyboard      = 1
 KEYCHAR             .byte ?             ; last key pressed
 CONSOL              .byte ?             ; state of OPTION,SELECT,START
 
-zpSource            .dword ?            ; Starting address for the source data (4 bytes)
-zpDest              .dword ?            ; Starting address for the destination block (4 bytes)
-zpSize              .dword ?            ; Number of bytes to copy (4 bytes)
+zpSource            .long ?             ; Starting address for the source data
+zpDest              .long ?             ; Starting address for the destination block
+zpSize              .long ?             ; Number of bytes to copy
 
 zpTemp1             .byte ?
 zpTemp2             .byte ?
