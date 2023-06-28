@@ -24,11 +24,11 @@ _movestar       lda StarSpeed           ; set movement timer
                 sbc #44                 ; TODO:
                 sta StarLiteralX
 
-                .randomByte             ; want to change the star's direction?
+                .frsRandomByte          ; want to change the star's direction?
                 cmp #240
                 bcc _samedir            ;   no, use same
 
-_newdir         .randomByte             ; get random direction
+_newdir         .frsRandomByte          ; get random direction
                 and #7
                 jmp _dirchk
 

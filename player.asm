@@ -584,11 +584,11 @@ _timrst         lda #5                  ; set death timer to 5 jiffies
 _deadcc         lda DEDBRT              ; move brightness to death sound volume
                 sta SID1_CTRL1           ; volume=variable, distortion=0
 
-                .randomByte
+                .frsRandomByte
                 and #$1F                ; death sound frequency
                 sta SID1_FREQ1
 
-                .randomByte
+                .frsRandomByte
                 and #$F0                ; death color
                 ora DEDBRT              ; add brite
                 ;sta COLPF1             ; put in line color
@@ -637,13 +637,13 @@ _releas         lda CONSOL              ; key pressed, now
 RandomLocation  .proc
                 lda #TRUE               ; don't show player
                 sta isHidePlayer
-_newloc         .randomByte             ; get random x
+_newloc         .frsRandomByte          ; get random value for x
                 and #$FE                ; must be even and on screen
                 cmp #159
                 bcs _newloc
 
                 sta PLOTX
-_cshy           .randomByte             ; get random y
+_cshy           .frsRandomByte          ; get random value for y
                 and #$7E                ; must be even and on screen
                 cmp #85
                 bcs _cshy
