@@ -29,7 +29,9 @@ zpPlayerColorIdx    .byte ?
 zpPlayerColorClock  .byte ?
 
 isDirtyPlayfield    .byte ?
+
 JIFFYCLOCK          .byte ?
+
 InputFlags          .byte ?
 InputType           .byte ?
 itJoystick      = 0
@@ -51,3 +53,4 @@ zpIndex3            .word ?
 RND_MIN             .byte ?
 RND_SEC             .byte ?
 RND_RESULT          .word ?
+
