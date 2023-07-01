@@ -140,25 +140,50 @@ ClearScreenRam  .proc
                 inc A                   ; [8000:9FFF]->[1_2000:1_3FFF]
                 sta MMU_Block4
 
-;   disable edit mode
-                lda MMU_CTRL
-                and #~mmuEditMode
-                sta MMU_CTRL
-
                 lda #<Screen16K         ; Set the source address
                 sta zpDest
                 lda #>Screen16K         ; Set the source address
                 sta zpDest+1
 
-                ldx #$20                ; quantity of pages (16K)
-                ldy #$00
+                lda #$05                ; quantity of buffer fills (16k/interation)
+                sta zpIndex1
+
                 lda #$00
+_next2          ldx #$40                ; quantity of pages (16k total)
+                ldy #$00
 _next1          sta (zpDest),Y
                 dey
                 bne _next1
 
+                inc zpDest+1
+
                 dex
                 bne _next1
+
+                dec zpIndex1
+                beq _XIT
+
+                inc MMU_Block3
+                inc MMU_Block3
+                inc MMU_Block4
+                inc MMU_Block4
+
+                pha
+
+;   reset to the top of the screen buffer
+                lda #<Screen16K         ; Set the source address
+                sta zpDest
+                lda #>Screen16K         ; Set the source address
+                sta zpDest+1
+
+                pla
+                bra _next2
+
+_XIT            
+;   disable edit mode
+                lda MMU_CTRL
+                and #~mmuEditMode
+                sta MMU_CTRL
 
                 ply
                 plx

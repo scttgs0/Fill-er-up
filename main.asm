@@ -37,8 +37,8 @@ START           .proc
 
                 jsr InitSID             ; init sounds
 
-                jsr InitBitmap
                 jsr ClearScreenRam
+                jsr InitBitmap
                 jsr InitSprites
                 jsr SpritesClear
 

@@ -398,7 +398,7 @@ InitBitmap      .proc
                 lda #>ScreenRAM
                 sta BITMAP2_ADDR+1
                 lda #`ScreenRAM
-                stz BITMAP2_ADDR+2
+                sta BITMAP2_ADDR+2
 
                 lda #bmcEnable|bmcLUT0
                 sta BITMAP2_CTRL
