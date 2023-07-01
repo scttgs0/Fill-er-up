@@ -5,8 +5,11 @@
 ;--------------------------------------
 ;--------------------------------------
 START           .proc
-                jsr InitSystemVectors
-                ; jsr InitMMU
+                sei
+                jsr InitMMU
+                jsr InitCPUVectors
+                jsr InitIRQs
+                cli
 
                 lda #TRUE               ; don't show player or star
                 sta isHidePlayer        ; we still must clear P/M area
@@ -20,7 +23,6 @@ START           .proc
                 .frsGraphics mcTextOn|mcOverlayOn|mcGraphicsOn|mcBitmapOn|mcSpriteOn,mcVideoMode240|mcTextDoubleX|mcTextDoubleY
                 .frsMouse_off
                 .frsBorder_off
-
 
                 stz BITMAP0_CTRL        ; disable all bitmaps
                 stz BITMAP1_CTRL
@@ -75,8 +77,6 @@ _zeroScoreVal   sta SCORE,X
                 sta LIVES
                 ora #$30                ; convert to ascii
                 sta panelLives          ; and put them in the score line
-
-                ; jsr InitIRQs
 
                 lda JIFFYCLOCK          ; initialize the player color clock
                 clc

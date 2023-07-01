@@ -1,4 +1,9 @@
 
+; SPDX-FileName: platform_f256jr.asm
+; SPDX-FileCopyrightText: Copyright 2023, Scott Giese
+; SPDX-License-Identifier: GPL-3.0-or-later
+
+
 ;======================================
 ; seed = quick and dirty
 ;======================================
@@ -469,40 +474,35 @@ _nextByteT      sta (zpDest),Y
 
 
 ;======================================
-;
+; Reset the CPU IRQ vectors
+;--------------------------------------
+; prior to calling this:
+;   ensure MMU slot 7 is configured
+;   ensure SEI is active
+;--------------------------------------
+; preserve      A
 ;======================================
-InitSystemVectors .proc
+InitCPUVectors .proc
                 pha
-                sei
 
-                cld                     ; clear decimal
-
-                ; lda #<DefaultHandler
-                ; sta vecCOP
-                ; lda #>DefaultHandler
-                ; sta vecCOP+1
+;   switch to system map
+                stz IOPAGE_CTRL
 
                 lda #<DefaultHandler
                 sta vecABORT
                 lda #>DefaultHandler
                 sta vecABORT+1
 
-                ; lda #<DefaultHandler
-                ; sta vecNMI
-                ; lda #>DefaultHandler
-                ; sta vecNMI+1
+                lda #<BOOT
+                sta vecRESET
+                lda #>BOOT
+                sta vecRESET+1
 
-                ; lda #<INIT
-                ; sta vecRESET
-                ; lda #>INIT
-                ; sta vecRESET+1
+                lda #<DefaultHandler
+                sta vecIRQ_BRK
+                lda #>DefaultHandler
+                sta vecIRQ_BRK+1
 
-                ; lda #<DefaultHandler
-                ; sta vecIRQ_BRK
-                ; lda #>DefaultHandler
-                ; sta vecIRQ_BRK+1
-
-                cli
                 pla
                 rts
                 .endproc
@@ -515,36 +515,54 @@ DefaultHandler  rti
 
 
 ;======================================
-;
+; Reset the MMU slots
+;--------------------------------------
+; prior to calling this:
+;   ensure SEI is active
+;--------------------------------------
+; preserve      A
+;               IOPAGE_CTRL
+;               MMU_CTRL
 ;======================================
 InitMMU         .proc
                 pha
-                sei
 
-                lda #mmuEditMode|mmuEditPage0|mmuPage0
+;   switch to system map
+                lda IOPAGE_CTRL
+                pha                     ; preserve
+                stz IOPAGE_CTRL
+
+;   ensure edit mode
+                lda MMU_CTRL
+                pha                     ; preserve
+                ora #mmuEditMode
                 sta MMU_CTRL
 
                 lda #$00                ; [0000:1FFF]
                 sta MMU_Block0
-                lda #$20                ; [2000:3FFF]
+                inc A                   ; [2000:3FFF]
                 sta MMU_Block1
-                lda #$40                ; [4000:5FFF]
+                inc A                   ; [4000:5FFF]
                 sta MMU_Block2
-                lda #$60                ; [6000:7FFF]
+                inc A                   ; [6000:7FFF]
                 sta MMU_Block3
-                lda #$80                ; [8000:9FFF]
+                inc A                   ; [8000:9FFF]
                 sta MMU_Block4
-                lda #$A0                ; [A000:BFFF]
+                inc A                   ; [A000:BFFF]
                 sta MMU_Block5
-                lda #$C0                ; [C000:DFFF]
+                inc A                   ; [C000:DFFF]
                 sta MMU_Block6
-                lda #$E0                ; [E000:FFFF]
+                inc A                   ; [E000:FFFF]
                 sta MMU_Block7
 
-                lda #mmuPage0
+;   restore MMU control
+                pla                     ; restore
                 sta MMU_CTRL
 
-                cli
+;   restore IOPAGE control
+                pla                     ; restore
+                sta IOPAGE_CTRL
+
                 pla
                 rts
                 .endproc
@@ -758,12 +776,18 @@ _data_Dest      .long BITMAP0,BITMAP1
 
 
 ;======================================
-;
+; Configure IRQ Handlers
+;--------------------------------------
+; prior to calling this:
+;   ensure SEI is active
+;--------------------------------------
+; preserve      A
 ;======================================
 InitIRQs        .proc
                 pha
 
-                sei                     ; disable IRQ
+;   switch to system map
+                stz IOPAGE_CTRL
 
 ;   enable IRQ handler
                 ;lda #<vecIRQ_BRK
@@ -783,19 +807,37 @@ InitIRQs        .proc
 ;   initialize joystick/keyboard
                 lda #$1F
                 sta InputFlags
-                stz InputType
+                ; sta InputFlags+1
+                stz InputType           ; =joystick
+                ; stz InputType+1
+
+;   disable all IRQ
+                lda #$FF
+                sta INT_EDGE_REG0
+                sta INT_EDGE_REG1
+                sta INT_EDGE_REG2
+                sta INT_MASK_REG0
+                sta INT_MASK_REG1
+                sta INT_MASK_REG2
+
+;   clear pending interrupts
+                lda INT_PENDING_REG0
+                sta INT_PENDING_REG0
+                lda INT_PENDING_REG1
+                sta INT_PENDING_REG1
+                lda INT_PENDING_REG2
+                sta INT_PENDING_REG2
 
 ;   enable Start-of-Frame IRQ
                 lda INT_MASK_REG0
-                and #~FNX0_INT00_SOF    
+                and #~INT00_SOF
                 sta INT_MASK_REG0
 
 ;   enable Keyboard IRQ
-                lda INT_MASK_REG1
-                and #~FNX1_INT00_KBD    
-                sta INT_MASK_REG1
+                ; lda INT_MASK_REG1
+                ; and #~INT01_VIA1
+                ; sta INT_MASK_REG1
 
-                cli                     ; enable IRQ
                 pla
                 rts
                 .endproc
@@ -803,9 +845,10 @@ InitIRQs        .proc
 
 ;======================================
 ;
+;--------------------------------------
+; preserve      A, X, Y
 ;======================================
 SetFont         .proc
-                php
                 pha
                 phx
                 phy
@@ -813,14 +856,16 @@ SetFont         .proc
 ;   DEBUG: helpful if you need to see the trace
                 ; bra _XIT
 
-                lda #<GameFont
-                sta zpSource
-                lda #>GameFont
-                sta zpSource+1
-
 ;   switch to charset map
                 lda #iopPage1
                 sta IOPAGE_CTRL
+
+;   Font #0
+FONT0           lda #<GameFont
+                sta zpSource
+                lda #>GameFont
+                sta zpSource+1
+                stz zpSource+2
 
                 lda #<FONT_MEMORY_BANK0
                 sta zpDest
@@ -848,6 +893,5 @@ _next1          lda (zpSource),Y
 _XIT            ply
                 plx
                 pla
-                plp
                 rts
                 .endproc

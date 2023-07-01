@@ -9,25 +9,33 @@ HandleIrq       .proc
                 phx
                 phy
 
-                lda INT_PENDING_REG1
-                bit #FNX1_INT00_KBD
-                beq _1
+;   switch to system map
+                lda IOPAGE_CTRL
+                pha                     ; preserve
+                stz IOPAGE_CTRL
 
-                jsr KeyboardHandler
+                ; lda INT_PENDING_REG1
+                ; bit #INT01_VIA1
+                ; beq _1
 
-                lda INT_PENDING_REG1
-                sta INT_PENDING_REG1
+                ; lda INT_PENDING_REG1
+                ; sta INT_PENDING_REG1
+
+                ; jsr KeyboardHandler
 
 _1              lda INT_PENDING_REG0
-                bit #FNX0_INT00_SOF
+                bit #INT00_SOF
                 beq _XIT
-
-                jsr VbiHandler
 
                 lda INT_PENDING_REG0
                 sta INT_PENDING_REG0
 
-_XIT            ply
+                jsr VbiHandler
+
+_XIT            pla                     ; restore
+                sta IOPAGE_CTRL
+
+                ply
                 plx
                 pla
 
