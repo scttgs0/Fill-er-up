@@ -12,63 +12,71 @@ Y               .word ?
                 .endstruct
 
 
-SPRITE          .sfunction field,idx,(SPRITE_BASE+field+(idx<<3))
+SPR             .sfunction field,idx,(SPRITE_BASE+field+(idx<<3))
 
 
 frsSpriteInit   .macro source,attr,idx
                 lda #<\source
-                sta SPRITE(sprite_t.ADDR, \idx)
+                sta SPR(sprite_t.ADDR, \idx)
                 lda #>\source
-                sta SPRITE(sprite_t.ADDR+1, \idx)
-                stz SPRITE(sprite_t.ADDR+2, \idx)
+                sta SPR(sprite_t.ADDR+1, \idx)
+                stz SPR(sprite_t.ADDR+2, \idx)
 
-                stz SPRITE(sprite_t.X, \idx)
-                stz SPRITE(sprite_t.X+1, \idx)
-                stz SPRITE(sprite_t.Y, \idx)
-                stz SPRITE(sprite_t.Y+1, \idx)
+                stz SPR(sprite_t.X, \idx)
+                stz SPR(sprite_t.X+1, \idx)
+                stz SPR(sprite_t.Y, \idx)
+                stz SPR(sprite_t.Y+1, \idx)
 
                 lda #\attr
-                sta SPRITE(sprite_t.CTRL, \idx)
+                sta SPR(sprite_t.CTRL, \idx)
                 .endmacro
 
 
 frsSpriteShow   .macro idx
-                lda SPRITE(sprite_t.CTRL, \idx)
+                lda SPR(sprite_t.CTRL, \idx)
                 ora #scEnable
-                sta SPRITE(sprite_t.CTRL, \idx)
+                sta SPR(sprite_t.CTRL, \idx)
                 .endmacro
 
 
 frsSpriteHide   .macro idx
-                lda SPRITE(sprite_t.CTRL, \idx)
+                lda SPR(sprite_t.CTRL, \idx)
                 and #~scEnable
-                sta SPRITE(sprite_t.CTRL, \idx)
+                sta SPR(sprite_t.CTRL, \idx)
+                .endmacro
+
+
+frsSpriteClear  .macro idx
+                stz SPR(sprite_t.X, \idx)
+                stz SPR(sprite_t.X+1, \idx)
+                stz SPR(sprite_t.Y, \idx)
+                stz SPR(sprite_t.Y+1, \idx)
                 .endmacro
 
 
 frsSpriteClearX .macro idx
-                stz SPRITE(sprite_t.X, \idx)
-                stz SPRITE(sprite_t.X+1, \idx)
+                stz SPR(sprite_t.X, \idx)
+                stz SPR(sprite_t.X+1, \idx)
                 .endmacro
 
 
 frsSpriteClearY .macro idx
-                stz SPRITE(sprite_t.Y, \idx)
-                stz SPRITE(sprite_t.Y+1, \idx)
+                stz SPR(sprite_t.Y, \idx)
+                stz SPR(sprite_t.Y+1, \idx)
                 .endmacro
 
 
 frsSpriteSetX   .macro val,idx
                 lda #<\val
-                sta SPRITE(sprite_t.X, \idx)
+                sta SPR(sprite_t.X, \idx)
                 lda #>\val
-                sta SPRITE(sprite_t.X+1, \idx)
+                sta SPR(sprite_t.X+1, \idx)
                 .endmacro
 
 
 frsSpriteSetY   .macro val,idx
                 lda #<\val
-                sta SPRITE(sprite_t.Y, \idx)
+                sta SPR(sprite_t.Y, \idx)
                 lda #>\val
-                sta SPRITE(sprite_t.Y+1, \idx)
+                sta SPR(sprite_t.Y+1, \idx)
                 .endmacro
