@@ -301,9 +301,12 @@ KEY_SPACE       = $39
                 phx
                 phy
 
-                lda JIFFYCLOCK          ; increment the jiffy clock each VBI
-                inc A
-                sta JIFFYCLOCK
+                inc JIFFYCLOCK          ; increment the jiffy clock each VBI
+
+;   when already in joystick mode, bypass the override logic
+                lda InputType
+                cmp #itJoystick
+                beq _joyModeP1
 
                 lda JOYSTICK0           ; read joystick0
                 and #$1F
@@ -313,6 +316,11 @@ KEY_SPACE       = $39
                 sta InputFlags          ; joystick activity -- override keyboard input
                 lda #itJoystick
                 sta InputType
+
+                bra _pause
+
+_joyModeP1      lda JOYSTICK0           ; read joystick0
+                sta InputFlags
 
 _pause          lda KEYCHAR
                 cmp #KEY_SPACE          ; is spacebar?
