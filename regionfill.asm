@@ -3,16 +3,17 @@
 ; FillRegion Routine
 ;--------------------------------------
 ; As with the 'Search' subroutine, the
-; FillRegion subroutine is far too complex to
-; explain here.  This fill is entirely
-; different from the system's fill
-; routine, as it will fill any shape
-; that is outlined in COLOR 2.
+; FillRegion subroutine is far too
+; complex to explain here.  This fill
+; is entirely different from the
+; system's fill routine, as it will
+; fill any shape that is outlined in
+; COLOR 2.
 ;======================================
 FillRegion      .proc
                 lda #0                  ; turn off
-                sta SID1_CTRL2           ; sound channels
-                sta SID1_CTRL3           ; 2 and 3.
+                sta SID1_CTRL2          ; sound channels
+                sta SID1_CTRL3          ; 2 and 3.
 
                 lda MAXY                ; initialize
                 sec                     ; the fill
