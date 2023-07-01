@@ -393,17 +393,18 @@ _nextPlayer     dex
 InitBitmap      .proc
                 pha
 
-                lda #<Playfield         ; Set the destination address
-                sta BITMAP0_ADDR
-                lda #>Playfield
-                sta BITMAP0_ADDR+1
-                stz BITMAP0_ADDR+2
+                lda #<ScreenRAM         ; Set the destination address
+                sta BITMAP2_ADDR
+                lda #>ScreenRAM
+                sta BITMAP2_ADDR+1
+                lda #`ScreenRAM
+                stz BITMAP2_ADDR+2
 
                 lda #bmcEnable|bmcLUT0
-                sta BITMAP0_CTRL
+                sta BITMAP2_CTRL
 
-                stz BITMAP1_CTRL        ; disabled
-                stz BITMAP2_CTRL
+                lda #locLayer2_BM2
+                sta LAYER_ORDER_CTRL_1
 
                 pla
                 rts
@@ -474,6 +475,109 @@ _nextByteT      sta (zpDest),Y
                 dex
                 bne _nextPageT
 
+;   switch to system map
+                stz IOPAGE_CTRL
+
+                ply
+                plx
+                pla
+                rts
+                .endproc
+
+
+;======================================
+; Render Player Scores & Bombs
+;--------------------------------------
+; preserve      A, X, Y
+;======================================
+RenderDebug     .proc
+v_RenderLine    .var 0*CharResX
+;---
+
+                pha
+                phx
+                phy
+
+;   switch to color map
+                lda #iopPage3
+                sta IOPAGE_CTRL
+
+;   reset color for the 40-char line
+                ldx #$FF
+                ldy #$FF
+_nextColor      inx
+                iny
+                cpy #$14
+                beq _processText
+
+                lda DebugMsgColor,Y
+                sta CS_COLOR_MEM_PTR+v_RenderLine,X
+                inx
+                sta CS_COLOR_MEM_PTR+v_RenderLine,X
+                bra _nextColor
+
+;   process the text
+_processText
+
+;   switch to text map
+                lda #iopPage2
+                sta IOPAGE_CTRL
+
+                ldx #$FF
+                ldy #$FF
+_nextChar       inx
+                iny
+                cpy #$14
+                beq _XIT
+
+                lda DebugMsg,Y
+                beq _space
+                cmp #$20
+                beq _space
+
+                cmp #$9B
+                beq _bomb
+
+                cmp #$41
+                bcc _number
+                bra _letter
+
+_space          sta CS_TEXT_MEM_PTR+v_RenderLine,X
+                inx
+                sta CS_TEXT_MEM_PTR+v_RenderLine,X
+
+                bra _nextChar
+
+;   (ascii-30)*2+$A0
+_number         sec
+                sbc #$30
+                asl
+
+                clc
+                adc #$A0
+                sta CS_TEXT_MEM_PTR+v_RenderLine,X
+                inx
+                inc A
+                sta CS_TEXT_MEM_PTR+v_RenderLine,X
+
+                bra _nextChar
+
+_letter         sta CS_TEXT_MEM_PTR+v_RenderLine,X
+                inx
+                clc
+                adc #$40
+                sta CS_TEXT_MEM_PTR+v_RenderLine,X
+
+                bra _nextChar
+
+_bomb           sta CS_TEXT_MEM_PTR+v_RenderLine,X
+                inx
+                inc A
+                sta CS_TEXT_MEM_PTR+v_RenderLine,X
+
+                bra _nextChar
+
+_XIT
 ;   switch to system map
                 stz IOPAGE_CTRL
 
