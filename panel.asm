@@ -66,8 +66,6 @@ RenderPanel     .proc
 v_renderLine    .var (CharResY-5)*CharResX
 ;---
 
-                php
-
 ;   reset color for two 40-char lines
                 ldx #$FF
                 ldy #$FF
@@ -117,7 +115,7 @@ _space          sta CS_TEXT_MEM_PTR+v_renderLine,X
 ;   (ascii-30)*2+$A0
 _number         sec
                 sbc #$30
-                asl A
+                asl
 
                 clc
                 adc #$A0
@@ -136,6 +134,5 @@ _letter         sta CS_TEXT_MEM_PTR+v_renderLine,X
 
                 bra _nextChar
 
-_XIT            plp
-                rts
+_XIT            rts
                 .endproc
