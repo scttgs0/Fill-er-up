@@ -5,6 +5,79 @@
 
 
 ;======================================
+;
+;======================================
+ClearScreenRAM  .proc
+                pha
+                phx
+                phy
+
+;   switch to system map
+                stz IOPAGE_CTRL
+
+;   enable edit mode
+                lda MMU_CTRL
+                ora #mmuEditMode
+                sta MMU_CTRL
+
+                lda #$08                ; [6000:7FFF]->[1_0000:1_1FFF]
+                sta MMU_Block3
+                inc A                   ; [8000:9FFF]->[1_2000:1_3FFF]
+                sta MMU_Block4
+
+                lda #<Screen16K         ; Set the source address
+                sta zpDest
+                lda #>Screen16K         ; Set the source address
+                sta zpDest+1
+
+                lda #$05                ; quantity of buffer fills (16k/interation)
+                sta zpIndex1
+
+                lda #$00
+_next2          ldx #$40                ; quantity of pages (16k total)
+                ldy #$00
+_next1          sta (zpDest),Y
+                dey
+                bne _next1
+
+                inc zpDest+1
+
+                dex
+                bne _next1
+
+                dec zpIndex1
+                beq _XIT
+
+                inc MMU_Block3
+                inc MMU_Block3
+                inc MMU_Block4
+                inc MMU_Block4
+
+                pha
+
+;   reset to the top of the screen buffer
+                lda #<Screen16K         ; Set the source address
+                sta zpDest
+                lda #>Screen16K         ; Set the source address
+                sta zpDest+1
+
+                pla
+                bra _next2
+
+_XIT            
+;   disable edit mode
+                lda MMU_CTRL
+                and #~mmuEditMode
+                sta MMU_CTRL
+
+                ply
+                plx
+                pla
+                rts
+                .endproc
+
+
+;======================================
 ; Unpack the playfield into Screen RAM
 ;======================================
 SetScreenRAM    .proc
@@ -23,9 +96,12 @@ SetScreenRAM    .proc
 
                 ;--.i16
                 ldx #0
-                stx zpIndex1
-                stx zpIndex2
-                stx zpIndex3
+                stz zpIndex1
+                stz zpIndex1+1
+                stz zpIndex2
+                stz zpIndex2+1
+                stz zpIndex3
+                stz zpIndex3+1
 
 _nextByte       ldy zpIndex1
                 lda [zpSource],Y
@@ -122,80 +198,7 @@ _XIT            ;--.i8
 ;======================================
 ;
 ;======================================
-ClearScreenRam  .proc
-                pha
-                phx
-                phy
-
-;   switch to system map
-                stz IOPAGE_CTRL
-
-;   enable edit mode
-                lda MMU_CTRL
-                ora #mmuEditMode
-                sta MMU_CTRL
-
-                lda #$08                ; [6000:7FFF]->[1_0000:1_1FFF]
-                sta MMU_Block3
-                inc A                   ; [8000:9FFF]->[1_2000:1_3FFF]
-                sta MMU_Block4
-
-                lda #<Screen16K         ; Set the source address
-                sta zpDest
-                lda #>Screen16K         ; Set the source address
-                sta zpDest+1
-
-                lda #$05                ; quantity of buffer fills (16k/interation)
-                sta zpIndex1
-
-                lda #$00
-_next2          ldx #$40                ; quantity of pages (16k total)
-                ldy #$00
-_next1          sta (zpDest),Y
-                dey
-                bne _next1
-
-                inc zpDest+1
-
-                dex
-                bne _next1
-
-                dec zpIndex1
-                beq _XIT
-
-                inc MMU_Block3
-                inc MMU_Block3
-                inc MMU_Block4
-                inc MMU_Block4
-
-                pha
-
-;   reset to the top of the screen buffer
-                lda #<Screen16K         ; Set the source address
-                sta zpDest
-                lda #>Screen16K         ; Set the source address
-                sta zpDest+1
-
-                pla
-                bra _next2
-
-_XIT            
-;   disable edit mode
-                lda MMU_CTRL
-                and #~mmuEditMode
-                sta MMU_CTRL
-
-                ply
-                plx
-                pla
-                rts
-                .endproc
-
-
-;======================================
-;
-;======================================
-BlitScreenRam    .proc
+BlitScreenRam   .proc
                 pha
 
                 lda #<$1E00             ; 24 lines (320 bytes/line)
@@ -206,9 +209,10 @@ BlitScreenRam    .proc
 
                 lda #<Screen16K         ; Set the source address
                 sta zpSource
-                lda #>Screen16K         ; Set the source address
+                lda #>Screen16K
                 sta zpSource+1
-                stz zpSource+2
+                lda #'Screen16K
+                sta zpSource+2
 
                 jsr Copy2VRAM
 
@@ -246,7 +250,9 @@ _nextBank       lda _data_Source,X      ; Set the source address
 
                 phx
                 phy
-                jsr BlitScreenRam
+
+                ;--jsr BlitScreenRam
+
                 ply
                 plx
 
