@@ -31,7 +31,7 @@ _next1          ;--sta SPR_STAR,X
 ;======================================
 PlotCalc        .proc                               ; Given: PLOTX=14, PLOTY=10
                 lda PLOTY                           ; A=$0A
-                asl A                  ; *2         ; A=$14
+                asl                     ; *2        ; A=$14
                 sta LO                              ; LO=$14
 
                 lda #0                              ; A=0
@@ -76,8 +76,8 @@ PlotCalc        .proc                               ; Given: PLOTX=14, PLOTY=10
                 tax                                 ; X=$02
 
                 lda PLOTX                           ; A=$0E
-                lsr A                   ; /4        ; A=$07, C=0
-                lsr A                               ; A=$03, C=1
+                lsr                     ; /4        ; A=$07, C=0
+                lsr                                 ; A=$03, C=1
                 clc
                 adc LO                              ; A=$93
                 sta LO                              ; LO=$93
