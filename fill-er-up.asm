@@ -15,13 +15,14 @@
 
                 .cpu "65c02"
 
-                .include "system_f256jr.equ"
-                .include "zeropage.equ"
-                .include "game.equ"
+                .include "equates/system_f256jr.equ"
+                .include "equates/zeropage.equ"
+                .include "equates/game.equ"
 
-                .include "frs_jr_graphic.mac"
-                .include "frs_jr_mouse.mac"
-                .include "frs_jr_random.mac"
+                .include "macros/frs_jr_graphic.mac"
+                .include "macros/frs_jr_mouse.mac"
+                .include "macros/frs_jr_random.mac"
+                .include "macros/frs_jr_sprite.mac"
 
 
 ;--------------------------------------
@@ -30,18 +31,20 @@
 ;--------------------------------------
 
                 .byte $F2,$56           ; signature
-                .byte $04               ; block count
-                .byte $01               ; start at block1
+                .byte $02               ; slot count
+                .byte $01               ; start slot
                 .addr BOOT              ; execute address
                 .word $0000             ; version
                 .word $0000             ; kernel
-                                        ; binary name
-                .text 'Fill-er Up',$00
+                .null 'Fill-er Up'      ; binary name
 
-BOOT            cld
-                ldx #$FF                ; initialize the stack
+
+;--------------------------------------
+
+BOOT            ldx #$FF                ; initialize the stack
                 txs
                 jmp START
+
 
 ;--------------------------------------
 ;--------------------------------------
@@ -61,16 +64,13 @@ BOOT            cld
 
                 .include "interrupt.asm"
                 .include "platform_f256jr.asm"
-
-;--------------------------------------
-                .align $100
-;--------------------------------------
+                .include "facade.asm"
 
                 .include "DATA.inc"
 
 
 ;--------------------------------------
-                .align $1000
+                .align $400
 ;--------------------------------------
 
 GameFont        .include "FONT.inc"
@@ -94,10 +94,3 @@ Stamps_end
 
 Playfield       .fill 86*40,$00
                 .fill 10*40,$00         ; overflow to prevent screen artifacts
-
-;--------------------------------------
-;--------------------------------------
-                .align $1000
-;--------------------------------------
-
-Video8K         .fill 8192,$00
