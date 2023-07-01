@@ -297,8 +297,6 @@ VbiHandler      .proc
 KEY_SPACE       = $39
 ;---
 
-                php
-
                 pha
                 phx
                 phy
@@ -410,21 +408,21 @@ _12             ;ldy StarRotPos
                 ; .m16
                 lda StarHorzPos         ; set star's horiz. pos.
                 and #$FF                ; byte->word
-                asl A                   ; *2, account for double-pixel display
+                asl                     ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
                 adc #32-6               ; -6, distance to star center
                 sta SPR(sprite_t.X, 1)
 
                 lda StarVertPos         ; set star's vert. pos.
                 and #$FF                ; byte->word
-                asl A                   ; *2, account for double-pixel display
+                asl                     ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
                 adc #32+24-6            ; +24, account for playfield vertical displacement
                 sta SPR(sprite_t.Y, 1)  ; -6, distance to star center
 
                 lda StarRotPos
                 and #$FF                ; byte->word
-                asl A                   ; *2, word lookup table
+                asl                     ; *2, word lookup table
                 tay
                 lda StarRotTbl,Y
                 sta SPR(sprite_t.ADDR, 1)
@@ -445,14 +443,14 @@ _13             lda isHidePlayer        ; ok to show player?
                 ; .m16
                 lda PX                  ; set player's horizontal position
                 and #$FF                ; byte->word
-                asl A                   ; *2, account for double-pixel display
+                asl                     ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
                 adc #32-2               ; -2, distance to player center
                 sta SPR(sprite_t.X, 0)
 
                 lda PY                  ; set player's vertical position
                 and #$FF                ; byte->word
-                asl A                   ; *2, account for double-pixel display
+                asl                     ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
                 adc #32+24-2            ; +24, account for playfield vertical displacement
                 sta SPR(sprite_t.Y, 0)  ; -2, distance to player center
@@ -468,8 +466,8 @@ _13             lda isHidePlayer        ; ok to show player?
                 stz zpPlayerColorIdx
 
 _14             lda zpPlayerColorIdx
-                asl A                   ; *4
-                asl A
+                asl                     ; *4
+                asl
                 tax
                 ldy #0
 _nextColor      lda palColor0,X
@@ -479,12 +477,10 @@ _nextColor      lda palColor0,X
                 cpy #4
                 bne _nextColor
 
-                jsr InitLUT
+                jsr InitGfxPalette
 
 _XIT            ply
                 plx
                 pla
-
-                plp
                 rts
                 .endproc
