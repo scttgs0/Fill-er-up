@@ -6,25 +6,36 @@
 
 ;======================================
 ; seed = quick and dirty
+;--------------------------------------
+; preserve      A
 ;======================================
 RandomSeedQuick .proc
+                pha
+
                 lda RTC_MIN
-                sta RNG_SEED_HI
+                sta RNG_SEED+1
 
                 lda RTC_SEC
-                sta RNG_SEED_LO
+                sta RNG_SEED
 
                 lda #rcEnable|rcDV      ; cycle the DV bit
                 sta RNG_CTRL
                 lda #rcEnable
                 sta RNG_CTRL
+
+                pla
+                rts
                 .endproc
 
 
 ;======================================
 ; seed = elapsed seconds this hour
+;--------------------------------------
+; preserve      A
 ;======================================
 RandomSeed      .proc
+                pha
+
                 lda RTC_MIN
                 jsr Bcd2Bin
                 sta RND_MIN
@@ -72,6 +83,9 @@ RandomSeed      .proc
                 sta RNG_CTRL
                 lda #rcEnable
                 sta RNG_CTRL
+
+                pla
+                rts
                 .endproc
 
 
@@ -82,15 +96,15 @@ Bcd2Bin         .proc
                 pha
 
 ;   upper-nibble * 10
+                lsr
+                pha                     ; n*2
+                lsr
                 lsr                     ; n*8
-                pha
-                lsr
-                lsr
-                sta zpTemp1             ; n*2
+                sta zpTemp1
 
-                pla
+                pla                     ; A=n*2
                 clc
-                adc zpTemp1
+                adc zpTemp1             ; A=n*8+n*2 := n*10
                 sta zpTemp1
 
 ;   add the lower-nibble
@@ -104,6 +118,8 @@ Bcd2Bin         .proc
 
 ;======================================
 ; Initialize SID
+;--------------------------------------
+; preserve      A, X
 ;======================================
 InitSID         .proc
                 pha
@@ -146,6 +162,8 @@ _next1          sta SID1_BASE,X
 
 ;======================================
 ; Initialize PSG
+;--------------------------------------
+; preserve      A, X
 ;======================================
 InitPSG         .proc
                 pha
@@ -167,6 +185,8 @@ _next1          sta PSG1_BASE,X
 
 ;======================================
 ; Initialize the text-color LUT
+;--------------------------------------
+; preserve      A, Y
 ;======================================
 InitTextPalette .proc
                 pha
@@ -211,6 +231,8 @@ _Text_CLUT      .dword $00282828        ; 0: Dark Jungle Green
 
 ;======================================
 ; Initialize the graphic-color LUT
+;--------------------------------------
+; preserve      A, Y
 ;======================================
 InitGfxPalette  .proc
                 pha
@@ -225,11 +247,13 @@ InitGfxPalette  .proc
                 sta zpSource
                 lda #>Palette
                 sta zpSource+1
+                stz zpSource+2
 
                 lda #<GRPH_LUT0_PTR
                 sta zpDest
                 lda #>GRPH_LUT0_PTR
                 sta zpDest+1
+                stz zpDest+2
 
                 ldx #$02                ; 128 colors * 4 = 512 bytes
 _nextPage       ldy #$00
@@ -259,50 +283,30 @@ _next1          lda (zpSource),Y
 ; Initialize the Sprite layer
 ;--------------------------------------
 ; sprites dimensions are 32x32 (1024)
+;--------------------------------------
+; preserve      A
 ;======================================
 InitSprites     .proc
-                php
                 pha
 
 ;   switch to system map
                 stz IOPAGE_CTRL
 
-;   setup player sprite (sprite-00)
-                lda #<SPR_PLAYER
-                sta SP00_ADDR
-                lda #>SPR_PLAYER
-                sta SP00_ADDR+1
-                stz SP00_ADDR+2
+;   set player sprite (sprite-00)
+                .frsSpriteInit SPR_PLAYER, scEnable|scLUT0|scDEPTH0|scSIZE_16, 0
 
-                stz SP00_X
-                stz SP00_X+1
-                stz SP00_Y
-                stz SP00_Y+1
-
-;   setup enemy sprite (sprite-01)
-                lda #<SPR_STAR0
-                sta SP01_ADDR
-                lda #>SPR_STAR0
-                sta SP01_ADDR+1
-                stz SP01_ADDR+2
-
-                stz SP01_X
-                stz SP01_X+1
-                stz SP01_Y
-                stz SP01_Y+1
-
-                lda #scEnable
-                sta SP00_CTRL
-                sta SP01_CTRL
+;   set enemy sprite (sprite-01)
+                .frsSpriteInit SPR_STAR0, scEnable|scLUT0|scDEPTH0|scSIZE_16, 1
 
                 pla
-                plp
                 rts
                 .endproc
 
 
 ;======================================
 ;
+;--------------------------------------
+; preserve      A, X, Y
 ;======================================
 CheckCollision  .proc
                 pha
@@ -325,8 +329,8 @@ _withinRange    sec
                 sta zpTemp1             ; zpTemp1=1 (row)
 
                 lda PlayerPosX,X
-                lsr             ; /2
                 lsr             ; /4
+                lsr
                 sta zpTemp2             ; (column)
 
                 lda #<CANYON
@@ -336,6 +340,7 @@ _withinRange    sec
 
                 ldy zpTemp1
 _nextRow        beq _checkRock
+
                 lda zpSource
                 clc
                 adc #40
@@ -343,6 +348,7 @@ _nextRow        beq _checkRock
                 bcc _1
 
                 inc zpSource+1
+
 _1              dey
                 bra _nextRow
 
@@ -350,21 +356,26 @@ _checkRock      ldy zpTemp2
                 lda (zpSource),Y
                 beq _nextPlayer
 
-                ;cmp #4
-                ;bcs _nextPlayer
+                cmp #4
+                bcs _nextPlayer
 
                 sta P2PF,X
 
                 stz zpTemp1
                 txa
-                asl
+                asl                     ; *2
                 rol zpTemp1
                 tay
+
                 lda zpSource
                 stz zpTemp2+1
                 clc
                 adc zpTemp2
-                sta P2PFaddr,Y
+                sta P2PFaddr,Y          ; low-byte
+
+                lda zpSource+1
+                adc #$00
+                sta P2PFaddr+1,Y        ; high-byte
 
 _nextPlayer     dex
                 bpl _nextBomb
@@ -401,6 +412,8 @@ InitBitmap      .proc
 
 ;======================================
 ; Clear the play area of the screen
+;--------------------------------------
+; preserve      A, X, Y
 ;======================================
 ClearScreen     .proc
 v_QtyPages      .var $04                ; 40x30 = $4B0... 4 pages + 176 bytes
@@ -410,7 +423,6 @@ v_EmptyText     .var $00
 v_TextColor     .var $40
 ;---
 
-                php
                 pha
                 phx
                 phy
@@ -468,7 +480,6 @@ _nextByteT      sta (zpDest),Y
                 ply
                 plx
                 pla
-                plp
                 rts
                 .endproc
 
@@ -709,69 +720,6 @@ BlitVideoRam    .proc
                 pla
                 plp
                 rts
-                .endproc
-
-
-;======================================
-;
-;======================================
-BlitPlayfield   .proc
-                php
-                pha
-                phx
-                phy
-
-                ldy #7                  ; 8 chuncks of 24 lines
-                ldx #0
-
-_nextBank       .m16
-                lda _data_Source,X    ; Set the source address
-                sta zpSource
-                lda _data_Source+2,X
-                and #$FF
-                sta zpSource+2
-                .m8
-
-                jsr SetVideoRam
-
-                .m16
-                lda _data_Dest,X      ; Set the destination address
-                sta zpDest
-                lda _data_Dest+2,X
-                and #$FF
-                sta zpDest+2
-                .m8
-
-                phx
-                phy
-                jsr BlitVideoRam
-                ply
-                plx
-
-                inx
-                inx
-                inx
-                dey
-                bpl _nextBank
-
-                ply
-                plx
-                pla
-                plp
-                rts
-
-;--------------------------------------
-
-_data_Source    .long Playfield+$0000,Playfield+$01E0
-                .long Playfield+$03C0,Playfield+$05A0
-                .long Playfield+$0780,Playfield+$0960
-                .long Playfield+$0B40,Playfield+$0D20
-
-_data_Dest      .long BITMAP0,BITMAP1
-                .long BITMAP2,BITMAP3
-                .long BITMAP4,BITMAP5
-                .long BITMAP6,BITMAP7
-
                 .endproc
 
 
