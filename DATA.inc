@@ -89,10 +89,10 @@ LIVES           .byte 0
 
 ;--------------------------------------
 
-StarRotTbl      .word $0400,$0800
-                .addr $0C00,$1000
-                .addr $1400,$1800
-                .addr $1C00
+StarRotTbl      .addr SPR_STAR0,SPR_STAR1
+                .addr SPR_STAR2,SPR_STAR3
+                .addr SPR_STAR4,SPR_STAR5
+                .addr SPR_STAR6
 
 vStarRotTimer   .byte 0
 StarRotPos      .byte 0

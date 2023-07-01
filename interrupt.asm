@@ -418,31 +418,41 @@ _11             sta StarRotPos          ; save rot. pos.
 
 ;   this section draws the star.
 
-_12             ;ldy StarRotPos
-                ;ldx StarVertPos
-
-                ; .m16
+_12             stz zpTemp1
+                stz zpTemp2
                 lda StarHorzPos         ; set star's horiz. pos.
-                and #$FF                ; byte->word
                 asl                     ; *2, account for double-pixel display
+                rol zpTemp1
                 clc                     ; +32, account for off-screen border
                 adc #32-6               ; -6, distance to star center
+                rol zpTemp2
                 sta SPR(sprite_t.X, 1)
+                clc
+                lda zpTemp1
+                adc zpTemp2
+                sta SPR(sprite_t.X+1,1)
 
+                stz zpTemp1
+                stz zpTemp2
                 lda StarVertPos         ; set star's vert. pos.
-                and #$FF                ; byte->word
                 asl                     ; *2, account for double-pixel display
+                rol zpTemp1
                 clc                     ; +32, account for off-screen border
                 adc #32+24-6            ; +24, account for playfield vertical displacement
+                rol zpTemp2
                 sta SPR(sprite_t.Y, 1)  ; -6, distance to star center
+                clc
+                lda zpTemp1
+                adc zpTemp2
+                sta SPR(sprite_t.Y+1,1)
 
                 lda StarRotPos
-                and #$FF                ; byte->word
                 asl                     ; *2, word lookup table
                 tay
                 lda StarRotTbl,Y
                 sta SPR(sprite_t.ADDR, 1)
-                ; .m8
+                lda StarRotTbl+1,Y
+                sta SPR(sprite_t.ADDR+1, 1)
 
                 lda zpPlayerColorClock  ; is it time to change color?
                 cmp JIFFYCLOCK
