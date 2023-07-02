@@ -44,7 +44,7 @@ ScoreLine2      .text "LV:   SCORE:        "    ; double-wide text
 GameOver        .text "     GAME  OVER     "    ; double-wide text
 
 ScoreLine1Color .byte $10,$10,$10,$10
-                .byte $50,$50,$50,$50,$50
+                .byte $E0,$E0,$E0,$E0,$E0
                 .byte $00
                 .byte $10,$10,$10,$10
                 .byte $50,$50,$50,$50,$50

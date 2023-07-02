@@ -75,7 +75,7 @@ v_renderLine    .var (CharResY-5)*CharResX
                 ldy #$FF
 _nextColor      inx
                 iny
-                cpy #$14
+                cpy #$28                ; 2 lines = 40 characters
                 beq _processText
 
                 lda ScoreLine1Color,Y
