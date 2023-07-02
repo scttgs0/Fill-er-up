@@ -634,6 +634,7 @@ DefaultHandler  rti
 ;--------------------------------------
 ; prior to calling this:
 ;   ensure SEI is active
+;   ensure MMU Edit is active
 ;--------------------------------------
 ; preserve      A
 ;               IOPAGE_CTRL
