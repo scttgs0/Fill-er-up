@@ -647,12 +647,6 @@ InitMMU         .proc
                 pha                     ; preserve
                 stz IOPAGE_CTRL
 
-;   ensure edit mode
-                lda MMU_CTRL
-                pha                     ; preserve
-                ora #mmuEditMode
-                sta MMU_CTRL
-
                 lda #$00                ; [0000:1FFF]
                 sta MMU_Block0
                 inc A                   ; [2000:3FFF]
@@ -669,10 +663,6 @@ InitMMU         .proc
                 sta MMU_Block6
                 inc A                   ; [E000:FFFF]
                 sta MMU_Block7
-
-;   restore MMU control
-                pla                     ; restore
-                sta MMU_CTRL
 
 ;   restore IOPAGE control
                 pla                     ; restore

@@ -32,7 +32,7 @@
 
                 .byte $F2,$56           ; signature
                 .byte $02               ; slot count
-                .byte $01               ; start slot
+                .byte $01               ; first slot
                 .addr BOOT              ; execute address
                 .word $0000             ; version
                 .word $0000             ; kernel
@@ -43,6 +43,12 @@
 
 BOOT            ldx #$FF                ; initialize the stack
                 txs
+
+;   ensure MMU edit mode
+                lda MMU_CTRL
+                ora #mmuEditMode
+                sta MMU_CTRL
+
                 jmp START
 
 
