@@ -41,6 +41,7 @@ CONSOL              .byte ?             ; state of OPTION,SELECT,START
 
 zpSource            .long ?             ; Starting address for the source data
 zpDest              .long ?             ; Starting address for the destination block
+zpDest2             .long ?             ; Starting address for the destination block
 zpSize              .long ?             ; Number of bytes to copy
 
 zpTemp1             .byte ?
