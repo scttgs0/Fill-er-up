@@ -39,9 +39,9 @@
 
 ;--------------------------------------
 
-ScoreLine1      .text 'TGT:      CUR:      '    ; double-wide text
-ScoreLine2      .text 'LV:   SCORE:        '    ; double-wide text
-GameOver        .text '     GAME  OVER     '    ; double-wide text
+ScoreLine1      .text "TGT:      CUR:      "    ; double-wide text
+ScoreLine2      .text "LV:   SCORE:        "    ; double-wide text
+GameOver        .text "     GAME  OVER     "    ; double-wide text
 
 ScoreLine1Color .byte $10,$10,$10,$10
                 .byte $50,$50,$50,$50,$50

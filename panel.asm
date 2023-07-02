@@ -66,22 +66,31 @@ RenderPanel     .proc
 v_renderLine    .var (CharResY-5)*CharResX
 ;---
 
+;   switch to color map
+                lda #iopPage3
+                sta IOPAGE_CTRL
+
 ;   reset color for two 40-char lines
                 ldx #$FF
                 ldy #$FF
 _nextColor      inx
                 iny
-                cpy #$28
+                cpy #$14
                 beq _processText
 
                 lda ScoreLine1Color,Y
                 sta CS_COLOR_MEM_PTR+v_renderLine,X
                 inx
                 sta CS_COLOR_MEM_PTR+v_renderLine,X
-                bne _nextColor
+                bra _nextColor
 
 ;   process the text
-_processText    ldx #$FF
+_processText    
+;   switch to text map
+                lda #iopPage2
+                sta IOPAGE_CTRL
+                
+                ldx #$FF
                 ldy #$FF
 _nextChar       inx
                 iny
@@ -99,10 +108,10 @@ _nextChar       inx
 
 _normal         lda ScoreLine1,Y
 
-_cont           cmp #$20
+_cont           cmp #' '
                 beq _space
 
-                cmp #$41
+                cmp #'A'
                 bcc _number
                 bra _letter
 
@@ -114,7 +123,7 @@ _space          sta CS_TEXT_MEM_PTR+v_renderLine,X
 
 ;   (ascii-30)*2+$A0
 _number         sec
-                sbc #$30
+                sbc #'0'
                 asl
 
                 clc
@@ -134,5 +143,6 @@ _letter         sta CS_TEXT_MEM_PTR+v_renderLine,X
 
                 bra _nextChar
 
-_XIT            rts
+_XIT            stz IOPAGE_CTRL
+                rts
                 .endproc
