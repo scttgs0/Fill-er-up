@@ -466,21 +466,26 @@ _12             stz zpTemp1
 _13             lda isHidePlayer        ; ok to show player?
                 bne _XIT                ;   no, exit VBI
 
-                ; .m16
+                stz zpTemp1
+                stz zpTemp2
                 lda PX                  ; set player's horizontal position
-                and #$FF                ; byte->word
                 asl                     ; *2, account for double-pixel display
+                rol zpTemp1
                 clc                     ; +32, account for off-screen border
                 adc #32-2               ; -2, distance to player center
+                rol zpTemp2
                 sta SPR(sprite_t.X, 0)
 
+                clc
+                lda zpTemp1
+                adc zpTemp2
+                sta SPR(sprite_t.X+1, 0)
+
                 lda PY                  ; set player's vertical position
-                and #$FF                ; byte->word
                 asl                     ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
                 adc #32+24-2            ; +24, account for playfield vertical displacement
                 sta SPR(sprite_t.Y, 0)  ; -2, distance to player center
-                ; .m8
 
                 lda isPreventColorChange ; color change ok?
                 bne _XIT                ;   no, exit VBI
