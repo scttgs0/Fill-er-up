@@ -683,16 +683,16 @@ SetVideoRam     .proc
                 phx
                 phy
 
-                .m16
+                ;!!.m16
                 lda #<>Video8K          ; Set the destination address
                 sta zpDest
                 lda #`Video8K
                 sta zpDest+2
-                .m8
+                ;!!.m8
 
                 stz zpTemp2     ; HACK:
 
-                .i16
+                ;!!.i16
                 ldx #0
                 stx zpIndex1
                 stx zpIndex2
@@ -722,12 +722,12 @@ _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
 ;   duplicate this in the next line down (double-height)
                 phy
                 pha
-                .m16
+                ;!!.m16
                 tya
                 clc
                 adc #320
                 tay
-                .m8
+                ;!!.m8
                 pla
                 sta [zpDest],Y          ; double-height
                 ply
@@ -739,12 +739,12 @@ _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
 ;   duplicate this in the next line down (double-height)
                 phy
                 pha
-                .m16
+                ;!!.m16
                 tya
                 clc
                 adc #320
                 tay
-                .m8
+                ;!!.m8
                 pla
                 sta [zpDest],Y          ; double-height
                 ply
@@ -766,7 +766,7 @@ _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
                 cmp #12
                 beq _XIT
 
-                .m16
+                ;!!.m16
                 lda zpIndex2            ; we already processed the next line (double-height)...
                 clc
                 adc #320                ; so move down one additional line
@@ -774,13 +774,13 @@ _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
 
                 lda #0
                 sta zpIndex3            ; reset the column counter
-                .m8
+                ;!!.m8
 
 _checkEnd       ldx zpIndex1
                 cpx #$1E0               ; 12 source lines (40 bytes/line)... = 24 destination lines (~8K)
                 bcc _nextByte
 
-_XIT            .i8
+_XIT            ;!!.i8
 
                 ply
                 plx
@@ -797,7 +797,7 @@ BlitVideoRam    .proc
                 php
                 pha
 
-                .m16
+                ;!!.m16
 
                 lda #$1E00              ; 24 lines (320 bytes/line)
                 sta zpSize
@@ -809,7 +809,7 @@ BlitVideoRam    .proc
                 lda #`Video8K
                 sta zpSource+2
 
-                .m8
+                ;!!.m8
                 jsr Copy2VRAM
 
                 pla

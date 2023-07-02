@@ -40,7 +40,7 @@ START           .proc
                 jsr ClearScreenRAM
                 jsr InitBitmap
                 jsr InitSprites
-                ;--jsr SpritesClear
+                ;!!jsr SpritesClear
 
                 lda #64                 ; and set up the star's vertical and horizontal position
                 sta StarVertPos

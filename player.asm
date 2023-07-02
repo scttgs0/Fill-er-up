@@ -6,8 +6,8 @@ SpritesClear    .proc
                 lda #0
                 ldy #1
 _nextPage       ldx #0
-_next1          ;--sta SPR_STAR,X
-                ;--sta SPR_PLAYER,X
+_next1          ;!!sta SPR_STAR,X
+                ;!!sta SPR_PLAYER,X
                 dex
                 bne _next1
 
@@ -550,7 +550,7 @@ _showscore      lda SCORE,X
                 sta isFillOn
                 sta isHidePlayer
 
-                ;--jsr SpritesClear        ; clear p/m area
+                ;!!jsr SpritesClear        ; clear p/m area
 
                 lda #64                 ; initialize the star position
                 sta StarVertPos
@@ -657,7 +657,7 @@ _cshy           .frsRandomByte          ; get random value for y
                 cmp COLOR1,X            ; color 1?
                 bne _newloc             ;   no, try again.
 
-                ;--jsr SpritesClear        ; it's ok, clear p/m
+                ;!!jsr SpritesClear        ; it's ok, clear p/m
 
                 lda PLOTX               ; save the player's
                 sta PX                  ; new coordinates
