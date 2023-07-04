@@ -51,6 +51,8 @@ zpIndex1            .word ?
 zpIndex2            .word ?
 zpIndex3            .word ?
 
+BlitLines           .byte ?
+
 RND_MIN             .byte ?
 RND_SEC             .byte ?
 RND_RESULT          .word ?

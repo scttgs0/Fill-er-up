@@ -1,5 +1,5 @@
 
-; SPDX-FileName: platform_f256jr.asm
+; SPDX-FileName: facade.asm
 ; SPDX-FileCopyrightText: Copyright 2023, Scott Giese
 ; SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -15,14 +15,9 @@ ClearScreenRAM  .proc
 ;   switch to system map
                 stz IOPAGE_CTRL
 
-;   enable edit mode
-                lda MMU_CTRL
-                ora #mmuEditMode
-                sta MMU_CTRL
-
-                lda #$08                ; [6000:7FFF]->[1_0000:1_1FFF]
+                lda #$10                ; [6000:7FFF]->[2_0000:2_1FFF]
                 sta MMU_Block3
-                inc A                   ; [8000:9FFF]->[1_2000:1_3FFF]
+                inc A                   ; [8000:9FFF]->[2_2000:2_3FFF]
                 sta MMU_Block4
 
                 lda #<Screen16K         ; Set the source address
@@ -64,13 +59,7 @@ _next1          sta (zpDest),Y
                 pla
                 bra _next2
 
-_XIT            
-;   disable edit mode
-                lda MMU_CTRL
-                and #~mmuEditMode
-                sta MMU_CTRL
-
-                ply
+_XIT            ply
                 plx
                 pla
                 rts
@@ -79,143 +68,131 @@ _XIT
 
 ;======================================
 ; Unpack the playfield into Screen RAM
+;--------------------------------------
+; 24 lines will fit within a slot
+;   slot=$2000, 24-lines=$1E00
+; double-lines w/in 2-slots
+;   =$3C00 (of $4000)
+; we then reset the Screen16K buffers
+; (one position) to resume at:
+;   =slot+($3C00-$2000)
+;   =$6000+1C00... =$7C00
+; - - - - - - - - - - - - - - - - - - -
+; we intend to resume at line 48
+;   =48*320, =$3C00
+;   =$3C00-$2000, =$1C00
+;   =$6000+1C00... =$7C00
+; - - - - - - - - - - - - - - - - - - -
+; we intend to resume at line 76
+;   =96*320, =$5F00
+;   =$5F00-$4000, =$1F00
+;   =$6000+1F00... =$7F00
+; - - - - - - - - - - - - - - - - - - -
+; we intend to resume at line 102
+;   =102*320, =$7F80
+;   =$7F80-$6000, =$1F80
+;   =$6000+1F80... =$7F80
+; - - - - - - - - - - - - - - - - - - -
+; we intend to resume at line 128
+;   =128*320, =$A000
+;   =$A000-$A000, =$0000
+;   =$6000+0000... =$6000
+; - - - - - - - - - - - - - - - - - - -
+; we intend to resume at line 176
+;   =176*320, =$DC00
+;   =$DC00-$C000, =$1C00
+;   =$6000+1C00... =$7C00
+; - - - - - - - - - - - - - - - - - - -
+; we intend to resume at line 204
+;   =203*320, =$FF00
+;   =$FF00-$E000, =$1F00
+;   =$6000+1F00... =$7F00
+; - - - - - - - - - - - - - - - - - - -
+; we intend to resume at line 230
+;   =230*320, =$11F80
+;   =$11F80-$10000, =$1F80
+;   =$6000+1F80... =$7F80
+; - - - - - - - - - - - - - - - - - - -
+; we're done @ line 256
 ;======================================
 SetScreenRAM    .proc
                 pha
                 phx
                 phy
 
-                lda #<Screen16K          ; Set the destination address
-                sta zpDest
-                lda #>Screen16K          ; Set the destination address
-                sta zpDest+1
-                lda #`Screen16K
-                sta zpDest+2
+                stz zpIndex1            ; source pointer, range[0:255]
+                stz zpIndex2            ; dest pointer, range[0:255]
+                stz zpIndex3            ; source byte counter, range[0:40]
 
-                stz zpTemp2     ; HACK:
-
-                ;--.i16
-                ldx #0
-                stz zpIndex1
-                stz zpIndex1+1
-                stz zpIndex2
-                stz zpIndex2+1
-                stz zpIndex3
-                stz zpIndex3+1
-
-_nextByte       ldy zpIndex1
-                lda [zpSource],Y
-
-                inc zpIndex1            ; increment the byte counter (source pointer)
+_next1          ldy zpIndex1
+                lda (zpSource),Y
+                inc zpIndex3            ; increment the byte counter
+                inc zpIndex1            ; increment the source pointer
                 bne _1
 
-                inc zpIndex1+1
+                inc zpSource+1
 
-_1              inc zpIndex3            ; increment the column counter
-
-                ldx #3
+_1              ldx #3
 _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
                 asl
                 rol zpTemp1
                 asl
                 rol zpTemp1
-                pha
+                pha                     ; preserve
 
                 lda zpTemp1
+                lda BlitLines   ; HACK:
+                ;and #1          ; HACK:
                 ldy zpIndex2
-                sta [zpDest],Y
-
-;   duplicate this in the next line down (double-height)
-                phy
-                pha
-                ;--.m16
-                tya
-                clc
-                adc #320
-                tay
-                ;--.m8
-                pla
-                sta [zpDest],Y          ; double-height
-                ply
-;---
+                sta (zpDest),Y
+                sta (zpDest2),Y         ; double-height
 
                 iny
-                sta [zpDest],Y          ; double-pixel
-
-;   duplicate this in the next line down (double-height)
-                phy
-                pha
-                ;--.m16
-                tya
-                clc
-                adc #320
-                tay
-                ;--.m8
-                pla
-                sta [zpDest],Y          ; double-height
-                ply
-;---
+                sta (zpDest),Y          ; double-pixel
+                sta (zpDest2),Y         ; double-height
 
                 iny
-                sty zpIndex2
-                pla
+                sty zpIndex2            ; update the dest pointer
+                bne _2
+
+                inc zpDest+1
+                inc zpDest2+1
+
+_2              pla                     ; restore
 
                 dex
                 bpl _nextPixel
 
                 ldx zpIndex3
-                cpx #40
-                bcc _checkEnd
+                cpx #40                 ; <40?
+                bcc _next1              ;   yes
 
-                inc zpTemp2     ; HACK: exit criterian
-                lda zpTemp2
-                cmp #12
-                beq _XIT
+;   we completed a line
+                stz zpIndex3            ;   no, clear the byte counter
+                dec BlitLines           ; one less line to process
+                beq _XIT                ; exit when zero lines remain
 
-                ;--.m16
-                lda zpIndex2            ; we already processed the next line (double-height)...
+;   skip the next line since it is already rendered
+                lda zpDest
                 clc
-                adc #320                ; so move down one additional line
-                sta zpIndex2
+                adc #$40
+                sta zpDest
+                lda zpDest+1
+                adc #$01
+                sta zpDest+1
 
-                lda #0
-                sta zpIndex3            ; reset the column counter
-                ;--.m8
+                lda zpDest2
+                clc
+                adc #$40
+                sta zpDest2
+                lda zpDest2+1
+                adc #$01
+                sta zpDest2+1
 
-_checkEnd       ldx zpIndex1
-                cpx #$1E0               ; 12 source lines (40 bytes/line)... = 24 destination lines (~8K)
-                bcc _nextByte
+                bra _next1
 
-_XIT            ;--.i8
-
-                ply
+_XIT            ply
                 plx
-                pla
-                rts
-                .endproc
-
-
-;======================================
-;
-;======================================
-BlitScreenRam   .proc
-                pha
-
-                lda #<$1E00             ; 24 lines (320 bytes/line)
-                sta zpSize
-                lda #>$1E00             ; 24 lines (320 bytes/line)
-                sta zpSize+1
-                stz zpSize+2
-
-                lda #<Screen16K         ; Set the source address
-                sta zpSource
-                lda #>Screen16K
-                sta zpSource+1
-                lda #'Screen16K
-                sta zpSource+2
-
-                jsr Copy2VRAM
-
                 pla
                 rts
                 .endproc
@@ -229,38 +206,47 @@ BlitPlayfield   .proc
                 phx
                 phy
 
-                ldy #7                  ; 8 chuncks of 24 lines
-                ldx #0
+;   switch to system map
+                stz IOPAGE_CTRL
 
-_nextBank       lda _data_Source,X      ; Set the source address
+                ldy #$05
+                ldx #$00
+                stx _index
+_nextBank       phx                     ; preserve
+                ldx _index
+
+                lda _data_count,X
+                sta BlitLines
+
+                lda _data_MMUslot,X
+                sta MMU_Block3
+                inc A
+                sta MMU_Block4
+                plx                     ; restore
+
+                inc _index
+
+                lda _data_Source,X      ; Set the source address
                 sta zpSource
                 lda _data_Source+1,X    ; Set the source address
                 sta zpSource+1
-                lda _data_Source+2,X
-                sta zpSource+2
-
-                jsr SetScreenRAM
 
                 lda _data_Dest,X        ; Set the destination address
                 sta zpDest
-                lda _data_Dest+1,X      ; Set the destination address
+                lda _data_Dest+1,X
                 sta zpDest+1
-                lda _data_Dest+2,X
-                sta zpDest+2
 
-                phx
-                phy
+                lda _data_Dest2,X        ; Set the destination2 address (double-height lines)
+                sta zpDest2
+                lda _data_Dest2+1,X
+                sta zpDest2+1
 
-                ;--jsr BlitScreenRam
+                jsr SetScreenRAM
 
-                ply
-                plx
-
-                inx
                 inx
                 inx
                 dey
-                bpl _nextBank
+                bne _nextBank
 
                 ply
                 plx
@@ -269,12 +255,27 @@ _nextBank       lda _data_Source,X      ; Set the source address
 
 ;--------------------------------------
 
-_data_Source    .long Playfield+$0000,Playfield+$01E0
-                .long Playfield+$03C0,Playfield+$05A0
-                .long Playfield+$0780,Playfield+$0960
-                .long Playfield+$0B40,Playfield+$0D20
+_data_Source    .word Playfield
+                .word Playfield+$03C0
+                .word Playfield+$05F0
+                .word Playfield+$07F8
+                .word Playfield+$0A00
 
-_data_Dest      .long Screen16K
-                .long Screen16K+$2000
+_data_Dest      .word Screen16K
+                .word Screen16K+$1C00
+                .word Screen16K+$1F00
+                .word Screen16K+$1F80
+                .word Screen16K
 
+_data_Dest2     .word Screen16K+320
+                .word Screen16K+$1C00+320
+                .word Screen16K+$1F00+320
+                .word Screen16K+$1F80+320
+                .word Screen16K+320
+
+_data_count     .byte 24,14,13,13,24
+
+_data_MMUslot   .byte $10,$11,$12,$13,$15
+
+_index          .byte ?
                 .endproc

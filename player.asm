@@ -232,8 +232,7 @@ _wait1          lda isPaused            ; game paused?
                 lda isDirtyPlayfield
                 beq _1
 
-                ; jsr BlitPlayfield
-
+                jsr BlitPlayfield
                 stz isDirtyPlayfield
 
 _1              lda #$FD                ; do 'warble' sound
