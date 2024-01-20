@@ -15,14 +15,14 @@
 
                 .cpu "65c02"
 
-                .include "equates/system_f256jr.equ"
+                .include "equates/system_f256.equ"
                 .include "equates/zeropage.equ"
                 .include "equates/game.equ"
 
-                .include "macros/frs_jr_graphic.mac"
-                .include "macros/frs_jr_mouse.mac"
-                .include "macros/frs_jr_random.mac"
-                .include "macros/frs_jr_sprite.mac"
+                .include "macros/f256_graphic.mac"
+                .include "macros/f256_mouse.mac"
+                .include "macros/f256_random.mac"
+                .include "macros/f256_sprite.mac"
 
 
 ;--------------------------------------
@@ -69,7 +69,7 @@ BOOT            ldx #$FF                ; initialize the stack
 ;--------------------------------------
 
                 .include "interrupt.asm"
-                .include "platform_f256jr.asm"
+                .include "platform_f256.asm"
                 .include "facade.asm"
 
                 .include "DATA.inc"
@@ -100,3 +100,4 @@ Stamps_end
 
 Playfield       .fill 86*40,$00
                 .fill 10*40,$00         ; overflow to prevent screen artifacts
+                .fill 240*40,$00

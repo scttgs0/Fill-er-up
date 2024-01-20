@@ -12,6 +12,10 @@ ClearScreenRAM  .proc
                 phx
                 phy
 
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
 ;   switch to system map
                 stz IOPAGE_CTRL
 
@@ -32,6 +36,7 @@ ClearScreenRAM  .proc
 _next2          ldx #$40                ; quantity of pages (16k total)
                 ldy #$00
 _next1          sta (zpDest),Y
+
                 dey
                 bne _next1
 
@@ -59,7 +64,12 @@ _next1          sta (zpDest),Y
                 pla
                 bra _next2
 
-_XIT            ply
+_XIT
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
+
+                ply
                 plx
                 pla
                 rts
@@ -77,38 +87,58 @@ _XIT            ply
 ; (one position) to resume at:
 ;   =slot+($3C00-$2000)
 ;   =$6000+1C00... =$7C00
+; space available is $A000-7C00=$2400
+;   14 lines will fit within $2400 bytes
+;   14*2*320=$2300
 ; - - - - - - - - - - - - - - - - - - -
-; we intend to resume at line 48
+; we intend to resume at line 48 (=24*2)
 ;   =48*320, =$3C00
-;   =$3C00-$2000, =$1C00
-;   =$6000+1C00... =$7C00
+;   =$3C00-$2000,.. =$1C00
+;   =$6000+$1C00... =$7C00
 ; - - - - - - - - - - - - - - - - - - -
-; we intend to resume at line 76
-;   =96*320, =$5F00
+; - - - - - - - - - - - - - - - - - - -
+; we intend to resume at line 76 (=48+14*2)
+;   =76*320, =$5F00
 ;   =$5F00-$4000, =$1F00
 ;   =$6000+1F00... =$7F00
+; space available is $A000-7F00=$2100
+;   13 lines will fit within $2100 bytes
+;   13*2*320=$2080
 ; - - - - - - - - - - - - - - - - - - -
-; we intend to resume at line 102
+; we intend to resume at line 102 (=76+13*2)
 ;   =102*320, =$7F80
 ;   =$7F80-$6000, =$1F80
 ;   =$6000+1F80... =$7F80
+; space available is $A000-7F80=$2080
+;   13 lines will fit within $2080 bytes
+;   13*2*320=$2080
 ; - - - - - - - - - - - - - - - - - - -
-; we intend to resume at line 128
+; we intend to resume at line 128 (=102+13*2)
 ;   =128*320, =$A000
 ;   =$A000-$A000, =$0000
 ;   =$6000+0000... =$6000
+; space available is $A000-6000=$4000
+;   24 lines will fit within $4000 bytes
+;   24*2*320=$3C00
+;--------------------------------------
 ; - - - - - - - - - - - - - - - - - - -
-; we intend to resume at line 176
+; we intend to resume at line 176 (=128+24*2)
 ;   =176*320, =$DC00
 ;   =$DC00-$C000, =$1C00
 ;   =$6000+1C00... =$7C00
+; space available is $A000-7C00=$2400
+;   14 lines will fit within $2400 bytes
+;   14*2*320=$2300
 ; - - - - - - - - - - - - - - - - - - -
-; we intend to resume at line 204
-;   =203*320, =$FF00
+; we intend to resume at line 204 (-176+14*2)
+;   =204*320, =$FF00
 ;   =$FF00-$E000, =$1F00
 ;   =$6000+1F00... =$7F00
+; space available is $A000-7F00=$2100
+;   13 lines will fit within $2100 bytes
+;   13*2*320=$2080
 ; - - - - - - - - - - - - - - - - - - -
-; we intend to resume at line 230
+; we intend to resume at line 230 (=204+13*2)
 ;   =230*320, =$11F80
 ;   =$11F80-$10000, =$1F80
 ;   =$6000+1F80... =$7F80
@@ -140,9 +170,9 @@ _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
                 rol zpTemp1
                 pha                     ; preserve
 
-                lda zpTemp1
-                lda BlitLines   ; HACK:
-                ;and #1          ; HACK:
+                ;lda zpTemp1    ; HACK:
+                lda BlitLines   ; HACK:     color the line so we can analyze the render
+                ;and #1         ; HACK:
                 ldy zpIndex2
                 sta (zpDest),Y
                 sta (zpDest2),Y         ; double-height
@@ -206,13 +236,18 @@ BlitPlayfield   .proc
                 phx
                 phy
 
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
 ;   switch to system map
                 stz IOPAGE_CTRL
 
-                ldy #$05
+                ldy #$05                ; perform 5 block-copy operations
                 ldx #$00
                 stx _index
-_nextBank       phx                     ; preserve
+
+_nextBank       ;phx                     ; preserve
                 ldx _index
 
                 lda _data_count,X
@@ -222,7 +257,8 @@ _nextBank       phx                     ; preserve
                 sta MMU_Block3
                 inc A
                 sta MMU_Block4
-                plx                     ; restore
+
+                ;plx                     ; restore
 
                 inc _index
 
@@ -243,10 +279,14 @@ _nextBank       phx                     ; preserve
 
                 jsr SetScreenRAM
 
-                inx
-                inx
+                ;inx
+                ;inx
                 dey
                 bne _nextBank
+
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
                 ply
                 plx
@@ -273,7 +313,7 @@ _data_Dest2     .word Screen16K+320
                 .word Screen16K+$1F80+320
                 .word Screen16K+320
 
-_data_count     .byte 24,14,13,13,24
+_data_count     .byte 24,14,13,13,24        ; # of lines to draw
 
 _data_MMUslot   .byte $10,$11,$12,$13,$15
 

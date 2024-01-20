@@ -1,5 +1,5 @@
 
-; SPDX-FileName: platform_f256jr.asm
+; SPDX-FileName: platform_f256.asm
 ; SPDX-FileCopyrightText: Copyright 2023, Scott Giese
 ; SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -12,6 +12,13 @@
 RandomSeedQuick .proc
                 pha
 
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
+;   switch to system map
+                stz IOPAGE_CTRL
+
                 lda RTC_MIN
                 sta RNG_SEED+1
 
@@ -22,6 +29,10 @@ RandomSeedQuick .proc
                 sta RNG_CTRL
                 lda #rcEnable
                 sta RNG_CTRL
+
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
                 pla
                 rts
@@ -35,6 +46,13 @@ RandomSeedQuick .proc
 ;======================================
 RandomSeed      .proc
                 pha
+
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
+;   switch to system map
+                stz IOPAGE_CTRL
 
                 lda RTC_MIN
                 jsr Bcd2Bin
@@ -84,6 +102,10 @@ RandomSeed      .proc
                 lda #rcEnable
                 sta RNG_CTRL
 
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
+
                 pla
                 rts
                 .endproc
@@ -125,6 +147,13 @@ InitSID         .proc
                 pha
                 phx
 
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
+;   switch to system map
+                stz IOPAGE_CTRL
+
                 lda #0                  ; reset the SID registers
                 ldx #$1F
 _next1          sta SID1_BASE,X
@@ -154,6 +183,10 @@ _next1          sta SID1_BASE,X
                 sta SID1_SIGVOL
                 sta SID2_SIGVOL
 
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
+
                 plx
                 pla
                 rts
@@ -169,6 +202,13 @@ InitPSG         .proc
                 pha
                 phx
 
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
+;   switch to system map
+                stz IOPAGE_CTRL
+
                 lda #0                  ; reset the PSG registers
                 ldx #$07
 _next1          sta PSG1_BASE,X
@@ -176,6 +216,10 @@ _next1          sta PSG1_BASE,X
 
                 dex
                 bpl _next1
+
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
                 plx
                 pla
@@ -192,6 +236,10 @@ InitTextPalette .proc
                 pha
                 phy
 
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
 ;   switch to system map
                 stz IOPAGE_CTRL
 
@@ -202,6 +250,10 @@ _next1          lda _Text_CLUT,Y
 
                 dey
                 bpl _next1
+
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
                 ply
                 pla
@@ -239,6 +291,10 @@ InitGfxPalette  .proc
                 phx
                 phy
 
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
 ;   switch to graphic map
                 lda #$01
                 sta IOPAGE_CTRL
@@ -269,8 +325,9 @@ _next1          lda (zpSource),Y
                 dex
                 bne _nextPage
 
-;   switch to system map
-                stz IOPAGE_CTRL
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
                 ply
                 plx
@@ -289,6 +346,10 @@ _next1          lda (zpSource),Y
 InitSprites     .proc
                 pha
 
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
 ;   switch to system map
                 stz IOPAGE_CTRL
 
@@ -297,6 +358,10 @@ InitSprites     .proc
 
 ;   set enemy sprite (sprite-01)
                 .frsSpriteInit SPR_STAR0, scEnable|scLUT0|scDEPTH0|scSIZE_16, 1
+
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
                 pla
                 rts
@@ -393,6 +458,13 @@ _nextPlayer     dex
 InitBitmap      .proc
                 pha
 
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
+;   switch to system map
+                stz IOPAGE_CTRL
+
                 lda #<ScreenRAM         ; Set the destination address
                 sta BITMAP2_ADDR
                 lda #>ScreenRAM
@@ -405,6 +477,10 @@ InitBitmap      .proc
 
                 lda #locLayer2_BM2
                 sta LAYER_ORDER_CTRL_1
+
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
                 pla
                 rts
@@ -427,6 +503,10 @@ v_TextColor     .var $40
                 pha
                 phx
                 phy
+
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
 
 ;   switch to color map
                 lda #iopPage3
@@ -475,8 +555,9 @@ _nextByteT      sta (zpDest),Y
                 dex
                 bne _nextPageT
 
-;   switch to system map
-                stz IOPAGE_CTRL
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
                 ply
                 plx
@@ -497,6 +578,10 @@ v_RenderLine    .var 0*CharResX
                 pha
                 phx
                 phy
+
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
 
 ;   switch to color map
                 lda #iopPage3
@@ -578,8 +663,9 @@ _bomb           sta CS_TEXT_MEM_PTR+v_RenderLine,X
                 bra _nextChar
 
 _XIT
-;   switch to system map
-                stz IOPAGE_CTRL
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
                 ply
                 plx
@@ -600,6 +686,10 @@ _XIT
 InitCPUVectors .proc
                 pha
 
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
+
 ;   switch to system map
                 stz IOPAGE_CTRL
 
@@ -617,6 +707,10 @@ InitCPUVectors .proc
                 sta vecIRQ_BRK
                 lda #>DefaultHandler
                 sta vecIRQ_BRK+1
+
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
                 pla
                 rts
@@ -643,9 +737,11 @@ DefaultHandler  rti
 InitMMU         .proc
                 pha
 
-;   switch to system map
+;   preserve IOPAGE control
                 lda IOPAGE_CTRL
-                pha                     ; preserve
+                pha
+
+;   switch to system map
                 stz IOPAGE_CTRL
 
                 lda #$00                ; [0000:1FFF]
@@ -666,154 +762,10 @@ InitMMU         .proc
                 sta MMU_Block7
 
 ;   restore IOPAGE control
-                pla                     ; restore
+                pla
                 sta IOPAGE_CTRL
 
                 pla
-                rts
-                .endproc
-
-
-;======================================
-; Unpack the playfield into Video RAM
-;======================================
-SetVideoRam     .proc
-                php
-                pha
-                phx
-                phy
-
-                ;!!.m16
-                lda #<>Video8K          ; Set the destination address
-                sta zpDest
-                lda #`Video8K
-                sta zpDest+2
-                ;!!.m8
-
-                stz zpTemp2     ; HACK:
-
-                ;!!.i16
-                ldx #0
-                stx zpIndex1
-                stx zpIndex2
-                stx zpIndex3
-
-_nextByte       ldy zpIndex1
-                lda [zpSource],Y
-
-                inc zpIndex1            ; increment the byte counter (source pointer)
-                bne _1
-
-                inc zpIndex1+1
-_1              inc zpIndex3            ; increment the column counter
-
-                ldx #3
-_nextPixel      stz zpTemp1             ; extract 2-bit pixel color
-                asl A
-                rol zpTemp1
-                asl A
-                rol zpTemp1
-                pha
-
-                lda zpTemp1
-                ldy zpIndex2
-                sta [zpDest],Y
-
-;   duplicate this in the next line down (double-height)
-                phy
-                pha
-                ;!!.m16
-                tya
-                clc
-                adc #320
-                tay
-                ;!!.m8
-                pla
-                sta [zpDest],Y          ; double-height
-                ply
-;---
-
-                iny
-                sta [zpDest],Y          ; double-pixel
-
-;   duplicate this in the next line down (double-height)
-                phy
-                pha
-                ;!!.m16
-                tya
-                clc
-                adc #320
-                tay
-                ;!!.m8
-                pla
-                sta [zpDest],Y          ; double-height
-                ply
-;---
-
-                iny
-                sty zpIndex2
-                pla
-
-                dex
-                bpl _nextPixel
-
-                ldx zpIndex3
-                cpx #40
-                bcc _checkEnd
-
-                inc zpTemp2     ; HACK: exit criterian
-                lda zpTemp2
-                cmp #12
-                beq _XIT
-
-                ;!!.m16
-                lda zpIndex2            ; we already processed the next line (double-height)...
-                clc
-                adc #320                ; so move down one additional line
-                sta zpIndex2
-
-                lda #0
-                sta zpIndex3            ; reset the column counter
-                ;!!.m8
-
-_checkEnd       ldx zpIndex1
-                cpx #$1E0               ; 12 source lines (40 bytes/line)... = 24 destination lines (~8K)
-                bcc _nextByte
-
-_XIT            ;!!.i8
-
-                ply
-                plx
-                pla
-                plp
-                rts
-                .endproc
-
-
-;======================================
-;
-;======================================
-BlitVideoRam    .proc
-                php
-                pha
-
-                ;!!.m16
-
-                lda #$1E00              ; 24 lines (320 bytes/line)
-                sta zpSize
-                lda #0
-                sta zpSize+2
-
-                lda #<>Video8K          ; Set the source address
-                sta zpSource
-                lda #`Video8K
-                sta zpSource+2
-
-                ;!!.m8
-                jsr Copy2VRAM
-
-                pla
-                plp
                 rts
                 .endproc
 
@@ -827,6 +779,10 @@ BlitVideoRam    .proc
 ; preserve      A
 ;======================================
 InitIRQs        .proc
+                pha
+
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
                 pha
 
 ;   switch to system map
@@ -881,6 +837,10 @@ InitIRQs        .proc
                 ; and #~INT01_VIA1
                 ; sta INT_MASK_REG1
 
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
+
                 pla
                 rts
                 .endproc
@@ -898,6 +858,10 @@ SetFont         .proc
 
 ;   DEBUG: helpful if you need to see the trace
                 ; bra _XIT
+
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
 
 ;   switch to charset map
                 lda #iopPage1
@@ -930,8 +894,9 @@ _next1          lda (zpSource),Y
                 dex
                 bne _nextPage
 
-;   switch to system map
-                stz IOPAGE_CTRL
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
 
 _XIT            ply
                 plx
