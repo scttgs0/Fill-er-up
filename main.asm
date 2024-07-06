@@ -22,6 +22,7 @@ START           .proc
 
                 .frsGraphics mcTextOn|mcOverlayOn|mcGraphicsOn|mcBitmapOn|mcSpriteOn,mcVideoMode240|mcTextDoubleX|mcTextDoubleY
                 .frsMouse_off
+                .frsCursor 0
                 .frsBorder_off
 
                 stz BITMAP0_CTRL        ; disable all bitmaps

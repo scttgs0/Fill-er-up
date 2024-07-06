@@ -728,7 +728,6 @@ DefaultHandler  rti
 ;--------------------------------------
 ; prior to calling this:
 ;   ensure SEI is active
-;   ensure MMU Edit is active
 ;--------------------------------------
 ; preserve      A
 ;               IOPAGE_CTRL
@@ -743,6 +742,12 @@ InitMMU         .proc
 
 ;   switch to system map
                 stz IOPAGE_CTRL
+
+;   ensure edit mode
+                lda MMU_CTRL
+                pha                     ; preserve
+                ora #mmuEditMode
+                sta MMU_CTRL
 
                 lda #$00                ; [0000:1FFF]
                 sta MMU_Block0
@@ -761,8 +766,12 @@ InitMMU         .proc
                 inc A                   ; [E000:FFFF]
                 sta MMU_Block7
 
+;   restore MMU control
+                pla                     ; restore
+                sta MMU_CTRL
+
 ;   restore IOPAGE control
-                pla
+                pla                     ; restore
                 sta IOPAGE_CTRL
 
                 pla

@@ -12,6 +12,8 @@ panelLives              = ScoreLine2+19
 ScreenRAM               = $2_0000
 Screen16K               = $6000         ; 2 slots [$6000:$9FFF]
 
+;--------------------------------------
+
 CharResX                = 40
 CharResY                = 30
 

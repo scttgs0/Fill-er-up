@@ -1,6 +1,6 @@
 
 ;--------------------------------------
-; Zero-page Equates
+; Zero-page equates
 ;--------------------------------------
 
 ;--------------------------------------
@@ -30,9 +30,12 @@ zpPlayerColorClock      .byte ?
 
 isDirtyPlayfield        .byte ?
 
+;--------------------------------------
+
 JIFFYCLOCK              .byte ?
 
 InputFlags              .byte ?
+
 InputType               .byte ?         ; Joystick/Keyboard for Player 1
 itJoystick          = 0
 itKeyboard          = 1

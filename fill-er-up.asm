@@ -23,6 +23,7 @@
                 .include "macros/f256_mouse.mac"
                 .include "macros/f256_random.mac"
                 .include "macros/f256_sprite.mac"
+                .include "macros/f256_text.mac"
 
 
 ;--------------------------------------
@@ -30,24 +31,24 @@
                 * = $2000
 ;--------------------------------------
 
-                .byte $F2,$56           ; signature
-                .byte $02               ; slot count
-                .byte $01               ; first slot
-                .addr BOOT              ; execute address
-                .word $0000             ; version
-                .word $0000             ; kernel
-                .null 'Fill-er Up'      ; binary name
+                ; .byte $F2,$56           ; signature
+                ; .byte $02               ; slot count
+                ; .byte $01               ; first slot
+                ; .addr BOOT              ; execute address
+                ; .word $0001             ; version
+                ; .word $0000             ; kernel
+                ; .null 'Fill-er Up'      ; binary name
 
+;--------------------------------------
+
+                .text "PGX"
+                .byte $03
+                .dword BOOT
 
 ;--------------------------------------
 
 BOOT            ldx #$FF                ; initialize the stack
                 txs
-
-;   ensure MMU edit mode
-                lda MMU_CTRL
-                ora #mmuEditMode
-                sta MMU_CTRL
 
                 jmp START
 
