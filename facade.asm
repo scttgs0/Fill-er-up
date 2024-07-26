@@ -280,7 +280,7 @@ BlitPlayfield   .proc
                 ora #mmuEditMode
                 sta MMU_CTRL
 
-                ldy #$05                ; perform 5 block-copy operations
+                ldy #$06                ; perform 5 block-copy operations
                 stz _index
 
 _nextBank       ldx _index
@@ -334,26 +334,29 @@ _nextBank       ldx _index
 ;--------------------------------------
 
 _data_Source    .word Playfield
-                .word Playfield+$03C0
-                .word Playfield+$05F0
-                .word Playfield+$07F8
-                .word Playfield+$0A00
+                .word Playfield+$01E0
+                .word Playfield+$0410
+                .word Playfield+$0618
+                .word Playfield+$0820
+                .word Playfield+$0BE0
 
-_data_Dest      .word Screen16K
+_data_Dest      .word Screen16K+$1E00
                 .word Screen16K+$1C00
                 .word Screen16K+$1F00
                 .word Screen16K+$1F80
                 .word Screen16K
+                .word Screen16K+$1C00
 
-_data_Dest2     .word Screen16K+320
-                .word Screen16K+$1C00+320
-                .word Screen16K+$1F00+320
-                .word Screen16K+$1F80+320
+_data_Dest2     .word Screen16K+320+$1E00
+                .word Screen16K+320+$1C00
+                .word Screen16K+320+$1F00
+                .word Screen16K+320+$1F80
                 .word Screen16K+320
+                .word Screen16K+320+$1C00
 
-_data_count     .byte 24,14,13,13,24        ; # of lines to draw
+_data_count     .byte 12,14,13,13,24,9      ; # of lines to draw
 
-_data_MMUslot   .byte $10,$11,$12,$13,$15
+_data_MMUslot   .byte $10,$11,$12,$13,$15,$16
 
 _index          .byte ?
 
