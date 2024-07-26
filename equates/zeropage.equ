@@ -44,8 +44,13 @@ CONSOL                  .byte ?         ; state of OPTION,SELECT,START
 
 zpSource                .long ?         ; Starting address for the source data
 zpDest                  .long ?         ; Starting address for the destination block
-zpDest2                 .long ?         ; Starting address for the destination block
 zpSize                  .long ?         ; Number of bytes to copy
+
+zpPFSource              .long ?         ; Starting address for the source data
+zpPFDest                .long ?         ; Starting address for the destination block
+zpPFDest2               .long ?         ; Starting address for the destination block
+zpPFDest_cache          .long ?         ; Starting address for the destination block
+zpPFDest2_cache         .long ?         ; Starting address for the destination block
 
 zpTemp1                 .byte ?
 zpTemp2                 .byte ?
@@ -54,7 +59,7 @@ zpIndex1                .word ?
 zpIndex2                .word ?
 zpIndex3                .word ?
 
-BlitLines               .byte ?
+nBlitLines              .byte ?
 
 RND_MIN                 .byte ?
 RND_SEC                 .byte ?

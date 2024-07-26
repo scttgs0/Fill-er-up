@@ -19,6 +19,12 @@ ClearScreenRAM  .proc
 ;   switch to system map
                 stz IOPAGE_CTRL
 
+;   ensure edit mode
+                lda MMU_CTRL
+                pha                     ; preserve
+                ora #mmuEditMode
+                sta MMU_CTRL
+
                 lda #$10                ; [6000:7FFF]->[2_0000:2_1FFF]
                 sta MMU_Block3
                 inc A                   ; [8000:9FFF]->[2_2000:2_3FFF]
@@ -53,18 +59,21 @@ _next1          sta (zpDest),Y
                 inc MMU_Block4
                 inc MMU_Block4
 
-                pha
-
 ;   reset to the top of the screen buffer
+                pha
                 lda #<Screen16K         ; Set the source address
                 sta zpDest
                 lda #>Screen16K         ; Set the source address
                 sta zpDest+1
-
                 pla
+
                 bra _next2
 
 _XIT
+;   restore MMU control
+                pla
+                sta MMU_CTRL
+
 ;   restore IOPAGE control
                 pla
                 sta IOPAGE_CTRL
@@ -146,21 +155,35 @@ _XIT
 ; we're done @ line 256
 ;======================================
 SetScreenRAM    .proc
+zpSRCidx        .var zpIndex1           ; source pointer, range[0:255]
+zpDSTidx        .var zpIndex2           ; dest pointer, range[0:255]
+zpRowBytes      .var zpIndex3           ; source byte counter, range[0:39]
+;---
+
                 pha
                 phx
                 phy
 
-                stz zpIndex1            ; source pointer, range[0:255]
-                stz zpIndex2            ; dest pointer, range[0:255]
-                stz zpIndex3            ; source byte counter, range[0:40]
+                lda zpPFDest
+                sta zpPFDest_cache
+                lda zpPFDest+1
+                sta zpPFDest_cache+1
+                lda zpPFDest2
+                sta zpPFDest2_cache
+                lda zpPFDest2+1
+                sta zpPFDest2_cache+1
 
-_next1          ldy zpIndex1
-                lda (zpSource),Y
-                inc zpIndex3            ; increment the byte counter
-                inc zpIndex1            ; increment the source pointer
+                stz zpSRCidx
+                stz zpDSTidx
+                stz zpRowBytes
+
+_next1          ldy zpSRCidx
+                lda (zpPFSource),Y
+                inc zpRowBytes          ; increment the byte counter
+                inc zpSRCidx            ; increment the source pointer
                 bne _1
 
-                inc zpSource+1
+                inc zpPFSource+1
 
 _1              ldx #3
 _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
@@ -170,55 +193,63 @@ _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
                 rol zpTemp1
                 pha                     ; preserve
 
-                ;lda zpTemp1    ; HACK:
-                lda BlitLines   ; HACK:     color the line so we can analyze the render
-                ;and #1         ; HACK:
-                ldy zpIndex2
-                sta (zpDest),Y
-                sta (zpDest2),Y         ; double-height
+                lda zpTemp1
+                ;lda nBlitLines  ; HACK:     color the line so we can analyze the render
+                ;and #15         ; HACK:
+                ;clc             ; HACK:
+                ;adc #15         ; HACK:
+
+                ldy zpDSTidx
+                sta (zpPFDest),Y
+                sta (zpPFDest2),Y       ; double-height
 
                 iny
-                sta (zpDest),Y          ; double-pixel
-                sta (zpDest2),Y         ; double-height
+                sta (zpPFDest),Y        ; double-pixel
+                sta (zpPFDest2),Y       ; double-height
 
                 iny
-                sty zpIndex2            ; update the dest pointer
+                sty zpDSTidx            ; update the dest pointer
                 bne _2
 
-                inc zpDest+1
-                inc zpDest2+1
+                inc zpPFDest+1
+                inc zpPFDest2+1
 
 _2              pla                     ; restore
 
                 dex
                 bpl _nextPixel
 
-                ldx zpIndex3
+                ldx zpRowBytes
                 cpx #40                 ; <40?
                 bcc _next1              ;   yes
 
 ;   we completed a line
-                stz zpIndex3            ;   no, clear the byte counter
-                dec BlitLines           ; one less line to process
+                stz zpRowBytes          ;   no, clear the byte counter
+                dec nBlitLines          ; one less line to process
                 beq _XIT                ; exit when zero lines remain
 
 ;   skip the next line since it is already rendered
-                lda zpDest
+                lda zpPFDest_cache
                 clc
-                adc #$40
-                sta zpDest
-                lda zpDest+1
-                adc #$01
-                sta zpDest+1
+                adc #<$280
+                sta zpPFDest
+                sta zpPFDest_cache
+                lda zpPFDest_cache+1
+                adc #>$280
+                sta zpPFDest+1
+                sta zpPFDest_cache+1
 
-                lda zpDest2
+                lda zpPFDest2_cache
                 clc
-                adc #$40
-                sta zpDest2
-                lda zpDest2+1
-                adc #$01
-                sta zpDest2+1
+                adc #<$280
+                sta zpPFDest2
+                sta zpPFDest2_cache
+                lda zpPFDest2_cache+1
+                adc #>$280
+                sta zpPFDest2+1
+                sta zpPFDest2_cache+1
 
+                stz zpDSTidx
                 bra _next1
 
 _XIT            ply
@@ -243,46 +274,53 @@ BlitPlayfield   .proc
 ;   switch to system map
                 stz IOPAGE_CTRL
 
-                ldy #$05                ; perform 5 block-copy operations
-                ldx #$00
-                stx _index
+;   ensure edit mode
+                lda MMU_CTRL
+                pha                     ; preserve
+                ora #mmuEditMode
+                sta MMU_CTRL
 
-_nextBank       ;phx                     ; preserve
-                ldx _index
+                ldy #$05                ; perform 5 block-copy operations
+                stz _index
+
+_nextBank       ldx _index
+                inc _index
 
                 lda _data_count,X
-                sta BlitLines
+                sta nBlitLines
 
                 lda _data_MMUslot,X
                 sta MMU_Block3
                 inc A
                 sta MMU_Block4
 
-                ;plx                     ; restore
+                txa                     ; convert to WORD index
+                asl
+                tax
 
-                inc _index
+                lda _data_Source,X      ; set the source address
+                sta zpPFSource
+                lda _data_Source+1,X
+                sta zpPFSource+1
 
-                lda _data_Source,X      ; Set the source address
-                sta zpSource
-                lda _data_Source+1,X    ; Set the source address
-                sta zpSource+1
-
-                lda _data_Dest,X        ; Set the destination address
-                sta zpDest
+                lda _data_Dest,X        ; set the destination address
+                sta zpPFDest
                 lda _data_Dest+1,X
-                sta zpDest+1
+                sta zpPFDest+1
 
-                lda _data_Dest2,X        ; Set the destination2 address (double-height lines)
-                sta zpDest2
+                lda _data_Dest2,X       ; set the destination2 address (double-height lines)
+                sta zpPFDest2
                 lda _data_Dest2+1,X
-                sta zpDest2+1
+                sta zpPFDest2+1
 
                 jsr SetScreenRAM
 
-                ;inx
-                ;inx
                 dey
                 bne _nextBank
+
+;   restore MMU control
+                pla
+                sta MMU_CTRL
 
 ;   restore IOPAGE control
                 pla
@@ -318,4 +356,5 @@ _data_count     .byte 24,14,13,13,24        ; # of lines to draw
 _data_MMUslot   .byte $10,$11,$12,$13,$15
 
 _index          .byte ?
+
                 .endproc
