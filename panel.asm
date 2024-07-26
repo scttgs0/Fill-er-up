@@ -49,6 +49,7 @@ _showit         ldx #$4
 _next2          lda DECIMAL,X
                 ora #$30                ; convert to ascii
                 sta ScoreLine1,Y
+
                 iny
                 dex
                 bpl _next2
@@ -85,11 +86,11 @@ _nextColor      inx
                 bra _nextColor
 
 ;   process the text
-_processText    
+_processText
 ;   switch to text map
                 lda #iopPage2
                 sta IOPAGE_CTRL
-                
+
                 ldx #$FF
                 ldy #$FF
 _nextChar       inx

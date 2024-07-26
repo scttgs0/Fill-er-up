@@ -493,8 +493,7 @@ InitBitmap      .proc
 ; preserve      A, X, Y
 ;======================================
 ClearScreen     .proc
-v_QtyPages      .var $04                ; 40x30 = $4B0... 4 pages + 176 bytes
-                                        ; remaining 176 bytes cleared via ClearGamePanel
+v_QtyPages      .var $05                ; 40x30 = $4B0... 4 pages + 176 bytes
 
 v_EmptyText     .var $00
 v_TextColor     .var $40
@@ -767,11 +766,11 @@ InitMMU         .proc
                 sta MMU_Block7
 
 ;   restore MMU control
-                pla                     ; restore
+                pla
                 sta MMU_CTRL
 
 ;   restore IOPAGE control
-                pla                     ; restore
+                pla
                 sta IOPAGE_CTRL
 
                 pla

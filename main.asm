@@ -6,8 +6,8 @@
 ;--------------------------------------
 START           .proc
                 sei
-                jsr InitMMU
                 jsr InitCPUVectors
+                jsr InitMMU
                 jsr InitIRQs
                 cli
 
