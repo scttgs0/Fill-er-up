@@ -1,44 +1,4 @@
 
-;DLIST                  ;.byte AEMPTY8,AEMPTY8,AEMPTY8
-
-                        ;.byte $0D+ALMS             ; 160x172
-                        ;    .addr DISP
-                        ;.byte $0D,$0D,$0D,$0D      ; 40-byte line; 160 pixels; double-line (86*2=172)
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D,$0D,$0D,$0D
-                        ;.byte $0D
-
-                        ;.byte AEMPTY3
-
-                        ;.byte $06+ALMS
-                        ;    .addr ScoreLine1
-                        ;.byte $06+ALMS
-                        ;    .addr ScoreLine2
-
-                        ;.byte AVB+AJMP
-                        ;    .addr DLIST
-
-
-;--------------------------------------
-
 ScoreLine1              .text "TGT:      CUR:      "    ; double-wide text
 ScoreLine2              .text "LV:   SCORE:        "    ; double-wide text
 GameOver                .text "     GAME  OVER     "    ; double-wide text
@@ -58,12 +18,10 @@ ScoreLine2Color         .byte $10,$10,$10               ; label
                         .byte $00                       ; separator
                         .byte $30                       ; value
 
+
 ;--------------------------------------
-
-
-;-------------
 ; LEVEL TABLES
-;-------------
+;--------------------------------------
 TargetLO                .byte 64,16,224,40,248,212,16,4
                         .byte 248,224,212,224,68,168,112,212
 

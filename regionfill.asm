@@ -19,28 +19,35 @@ FillRegion      .proc
                 sec                     ; the fill
                 sbc MINY                ; sound
                 sta FILFRQ              ; frequency.
+
                 lda MINX
                 sec
                 sbc #1
                 sta MINX
                 sta FX
+
                 lda MINY
                 sta FY
                 sec
                 sbc #1
                 sta MINY
+
                 lda MAXX
                 clc
                 adc #1
                 sta MAXX
+
                 lda MAXY
                 clc
                 adc #1
                 sta MAXY
+
                 lda #0
                 sta ScoreTally
 
                 .endproc
+
+                ;[fall-through]
 
 
 ;--------------------------------------
@@ -49,14 +56,13 @@ FillRegion      .proc
 CLRC2T          .proc
                 lda #0
                 sta C2TALY
-_next1          jsr Locate
 
+_next1          jsr Locate
                 cmp #2
                 bne _next1
 
 _next2          inc C2TALY
                 jsr Locate
-
                 cmp #2
                 beq _next2
 
@@ -68,7 +74,6 @@ _next2          inc C2TALY
                 beq _fillit
 
                 jsr LOCPRV
-
                 beq CLRC2T
 
 _fillit         lda FX
@@ -96,8 +101,8 @@ _fillit         lda FX
 
                 lda #1
                 sta C2TALY
-_follow         jsr Locate
 
+_follow         jsr Locate
                 cmp #0
                 beq _loclp3
 
@@ -110,14 +115,11 @@ _follow         jsr Locate
 _loclp3         lda C2TALY
                 cmp #1
                 bne _loclp4
-
                 jmp CLRC2T
 
 _loclp4         jsr LOCPRV
-
                 cmp BitsOn,X
                 beq _fillit
-
                 jmp CLRC2T
 
                 .endproc
@@ -131,6 +133,7 @@ Locate          .proc
                 clc
                 adc #1
                 sta FX
+
                 cmp MAXX
                 bne _stofx
 
@@ -141,10 +144,13 @@ Locate          .proc
                 lda CurrentHI
                 adc #0
                 sta CurrentHI
+
                 lda #0
                 sta ScoreTally
+
                 lda MINX
                 sta FX
+
                 lda #0
                 sta C2TALY
 
@@ -156,6 +162,7 @@ Locate          .proc
                 beq _noffdc
 
                 dec FILFRQ
+
 _noffdc         lda FY
                 clc
                 adc #1
@@ -195,6 +202,7 @@ _stofx          lda FX
                 sta isDirtyPlayfield
 
                 inc ScoreTally
+
                 lda #2
                 rts
 
@@ -220,6 +228,7 @@ _c3             lda #3
 LOCPRV          .proc
                 lda FX
                 sta PLOTX
+
                 lda FY
                 sec
                 sbc #1
@@ -232,6 +241,7 @@ LOCPRV          .proc
                 ldy #0
                 lda BitsOn,X
                 and (LO),Y
+
                 rts
 
 _nolocp         lda #0

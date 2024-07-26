@@ -8,7 +8,6 @@
 MoveStar        .proc
                 lda vStarMoveTimer      ; time to move?
                 beq _movestar           ;   yes, go do it
-
                 jmp GetStick            ;   no, get stick
 
 _movestar       lda StarSpeed           ; set movement timer

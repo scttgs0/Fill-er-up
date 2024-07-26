@@ -12,8 +12,10 @@
 Search          .proc
                 lda #1
                 sta isFillOn
+
                 lda #0
                 sta D
+
                 lda StarHorzPos
                 sec
                 sbc #44
@@ -30,6 +32,7 @@ _findcl         ldx D
                 adc SXD,X
                 sta SX
                 sta PLOTX
+
                 lda SY
                 clc
                 adc SYD,X
@@ -48,6 +51,7 @@ _findcl         ldx D
 
                 lda #0
                 sta TD
+
                 jmp _found2
 
 _findc2         lda D
@@ -55,17 +59,14 @@ _findc2         lda D
                 jsr DECD
 
 _fc2a           jsr SRCHLC
-
                 cmp COLOR1,X
                 bne _fc2b
 
                 jsr GRABEM
-
                 jmp _findc2
 
 _fc2b           cmp COLOR2,X
                 bne _fc2c
-
                 jsr GRABEM
                 jmp _outlin
 
@@ -77,7 +78,6 @@ _found2         lda #0
                 jsr DECD
 
 _fnd2a          jsr SRCHLC
-
                 cmp COLOR2,X
                 bne _fnd2b
 
@@ -88,11 +88,11 @@ _fnd2b          lda TRIES
                 clc
                 adc #1
                 sta TRIES
+
                 cmp #3
                 beq _findc1
 
                 jsr INCD
-
                 jmp _fnd2a
 
 _findc1         lda D
@@ -100,57 +100,50 @@ _findc1         lda D
                 jsr DECD
 
 _fc1a           jsr SRCHLC
-
                 cmp COLOR1,X
                 bne _fc1b
 
                 jsr GRABEM
-
                 jmp _findc2
 
 _fc1b           jsr INCD
-
                 jmp _fc1a
 
 _outlin         jsr PLSXSY
 
                 lda #0
                 sta TRIES
-_outla          jsr SRCHLC
 
+_outla          jsr SRCHLC
                 cmp COLOR1,X
                 bne _outlb
 
                 jsr GRABEM
-
                 jmp _outlin
 
 _outlb          lda TRIES
                 clc
                 adc #1
                 sta TRIES
+
                 cmp #4
                 beq _outld
-
                 jsr INCD
-
                 jmp _outla
 
 _outld          jsr LOCTXY
 
 _outld2         cmp COLOR2,X
                 bne _outle
-
                 jsr FillRegion
 
                 lda #0
                 sta isFillOn
+
                 rts
 
 _outle          jsr INCD
-
                 jsr SRCHLC
-
                 jmp _outld2
 
                 .endproc
@@ -166,6 +159,7 @@ SRCHLC          .proc
                 adc SXD,X
                 sta TX
                 sta PLOTX
+
                 lda SY
                 clc
                 adc SYD,X
@@ -194,6 +188,7 @@ LOCTXY          .proc
                 ldy #0
                 lda (LO),Y
                 and BitsOn,X
+
                 rts
 
 _noread         lda #0
@@ -208,10 +203,12 @@ _noread         lda #0
 GRABEM          .proc
                 lda TD
                 sta D
+
                 lda TX
                 sta SX
                 lda TY
                 sta SY
+
                 rts
                 .endproc
 
@@ -225,6 +222,7 @@ INCD            .proc
                 adc #1
                 and #3
                 sta TD
+
                 rts
                 .endproc
 
@@ -238,6 +236,7 @@ DECD            .proc
                 sbc #1
                 and #3
                 sta TD
+
                 rts
                 .endproc
 
@@ -245,9 +244,10 @@ DECD            .proc
 ;======================================
 ;
 ;======================================
-PLSXSY         .proc
+PLSXSY          .proc
                 lda SX
                 sta PLOTX
+
                 cmp MAXX
                 bcc _tminx2
 
@@ -258,8 +258,10 @@ _tminx2         cmp MINX
                 bcs _ckymm2
 
                 sta MINX
+
 _ckymm2         lda SY
                 sta PLOTY
+
                 cmp MAXY
                 bcc _tminy2
 
@@ -270,6 +272,7 @@ _tminy2         cmp MINY
                 bcs _endmm2
 
                 sta MINY
+
 _endmm2         jsr PlotCalc
 
                 ldy #0
@@ -280,5 +283,6 @@ _endmm2         jsr PlotCalc
 
                 lda #TRUE
                 sta isDirtyPlayfield
+
                 rts
                 .endproc

@@ -1,24 +1,5 @@
 
 ;======================================
-; Clear out the P/M area
-;======================================
-SpritesClear    .proc
-                lda #0
-                ldy #1
-_nextPage       ldx #0
-_next1          ;!!sta SPR_STAR,X
-                ;!!sta SPR_PLAYER,X
-                dex
-                bne _next1
-
-                dey
-                bpl _nextPage
-
-                rts
-                .endproc
-
-
-;======================================
 ; Plot address calculator
 ;--------------------------------------
 ; multiply PLOTY by 40, then calculate
@@ -110,12 +91,12 @@ _next2          sta (LO),Y
                 cpx #86
                 bne _next1
 
-; -------------------------------------
+; - - - - - - - - - - - - - - - - - - -
 ; Draw the color 1 border
 ; -------------------------------------
 ; this section draws the 4 lines that
 ; make the white border on the screen.
-; -------------------------------------
+; - - - - - - - - - - - - - - - - - - -
                 lda #3
                 sta BORNUM
 
@@ -161,9 +142,9 @@ _drawln         jsr PlotCalc            ; alters X:= pixel offset
                 lda #TRUE
                 sta isDirtyPlayfield
 
-; ----------------------------------
+; - - - - - - - - - - - - - - - - - - -
 ; This section starts off each level
-; ----------------------------------
+; - - - - - - - - - - - - - - - - - - -
                 lda #80                 ; position the player
                 sta PX
                 lda #84
@@ -178,6 +159,7 @@ _drawln         jsr PlotCalc            ; alters X:= pixel offset
                 sta CurrentLO
                 sta CurrentHI
                 sta HIWK
+
                 lda #$FF                ; tell decimal converter not to place result
                 sta SLLOC
                 jsr ConvertDecimal      ; convert level #
@@ -194,8 +176,10 @@ _drawln         jsr PlotCalc            ; alters X:= pixel offset
                 sta LOWK
                 lda TargetHI,X
                 sta HIWK
+
                 lda STARSP,X
                 sta StarSpeed
+
                 lda #4
                 sta SLLOC
                 jsr ConvertDecimal      ; show target amount
@@ -213,6 +197,7 @@ ClearTrackTbl   .proc
                 tax
 _next1          sta DIR,X               ; clear direction
                 sta LGTH,X              ; and length entries
+
                 dex
                 bne _next1
 
@@ -270,7 +255,6 @@ _jCrash         jmp Crash               ; go kill player
 
 _alive          lda vMoveTimer          ; player moving?
                 beq _gotstk             ;   yes--get stick.
-
                 jmp MoveStar            ;   no, move star.
 
 _jGetStick      jmp GetStick            ; go get stick
@@ -307,6 +291,7 @@ _gotstk         lda #4                  ; reset the movement timer
                 bcc _jGetStick          ;   yes! ignore
 
                 sta PLOTX               ;   no, save it
+
                 sec
                 sbc XD,X
                 sta PXWC
@@ -319,6 +304,7 @@ _gotstk         lda #4                  ; reset the movement timer
                 bcs _jGetStick          ;   yes! ignore
 
                 sta PLOTY               ;   no, save it
+
                 sec
                 sbc YD,X
                 sta PYWC
@@ -340,6 +326,7 @@ _gotstk         lda #4                  ; reset the movement timer
                 ldy #0
                 lda BitsOn,X
                 and (LO),Y
+
                 pha                     ; and save it!
                 lda InputFlags          ; trigger pressed?
                 and #$10
@@ -347,7 +334,6 @@ _gotstk         lda #4                  ; reset the movement timer
 
                 pla                     ; ok to draw?
                 bne _repeat             ;   no!!
-
                 jmp DrawFunc            ;   yes, go draw.
 
 _notdrawing     pla                     ; not drawing--are we
@@ -363,6 +349,7 @@ _notdrawing     pla                     ; not drawing--are we
                 sta PX                  ; update px
                 lda CKY                 ; and py
                 sta PY
+
 _repeat         jmp GetStick            ; get stick
 
                 .endproc
@@ -376,6 +363,7 @@ DrawFunc        .proc
                 bne _drawok             ;   yes!
 
                 sta MoveIndex           ;   no, this is the first time--
+
                 lda StickHold           ; set up initial drawing variables.
                 sta DIR
 
@@ -397,7 +385,6 @@ _drawok         lda CKV                 ; did we
                 ldx CKVX                ; run into another
                 cmp COLOR2,X            ; color 2?
                 bne _nocrash            ;   no, we're ok.
-
                 jmp Crash               ; crraaassshhh!
 
 _nocrash        ldx MoveIndex           ; update the tracking tables
@@ -408,6 +395,7 @@ _nocrash        ldx MoveIndex           ; update the tracking tables
                 inc MoveIndex
                 inx
                 sta DIR,X
+
                 lda #0
                 sta LGTH,X
 _samdir         inc LGTH,X
@@ -434,14 +422,17 @@ _ccloop         jsr PlotCalc
 
                 ldy MoveIndex
                 ldx DIR,Y
+
                 lda XD,X
                 clc
                 adc PLOTX
                 sta PLOTX
+
                 lda YD,X
                 clc
                 adc PLOTY
                 sta PLOTY
+
                 jmp _ccloop
 
 _ckcolr         lda PLOTX               ; update x pos.
@@ -456,6 +447,7 @@ _tminx          cmp MINX
                 bcs _chkymm
 
                 sta MINX
+
 _chkymm         lda PLOTY
                 sta PY
                 cmp MAXY
@@ -468,11 +460,11 @@ _tminy          cmp MINY
                 bcs _endmm
 
                 sta MINY
+
 _endmm          ldx CKVX                ; did we draw
                 lda CKV                 ; into
                 cmp COLOR1,X            ; color 1?
                 beq _endlin             ;   yes! end of line!
-
                 jmp GetStick            ;   no, go get stick.
 
 _endlin         lda #FALSE              ; we aren't
@@ -483,6 +475,7 @@ _endlin         lda #FALSE              ; we aren't
                 sta LOWK
                 lda CurrentHI
                 sta HIWK
+
                 lda #14                 ; put at 14th
                 sta SLLOC               ; pos. in scoreline1
                 jsr ConvertDecimal      ; convert to decimal
@@ -500,7 +493,6 @@ _endlin         lda #FALSE              ; we aren't
                 sbc TargetHI,X
                 sta HIWK                ; hit target?
                 bpl _newlvl             ;   yes--new level!
-
                 jmp ClearTrackTbl       ;   no, go clear track
 
 _newlvl         lda LEVEL               ; if level < 15 then
@@ -509,11 +501,12 @@ _newlvl         lda LEVEL               ; if level < 15 then
 
                 inc LEVEL               ; increment level
 
-; --------------
+; - - - - - - - - - - - - - - - - - - -
 ; Increase score
-; --------------
+; - - - - - - - - - - - - - - - - - - -
 _nolinc         asl LOWK                ; score inc =
                 rol HIWK                ; tgt-cur * 2
+
                 lda #$FF                ; don't place
                 sta SLLOC               ; the result!
                 jsr ConvertDecimal      ; convert to decimal
@@ -529,10 +522,12 @@ _scolp          lda DECIMAL,Y
                 sec
                 sbc #10
                 sta SCORE,X
+
                 inc SCORE-1,X
                 jmp _nxspos
 
 _nocary         sta SCORE,X
+
 _nxspos         iny
                 dex
                 bpl _scolp
@@ -542,14 +537,13 @@ _nxspos         iny
 _showscore      lda SCORE,X
                 ora #$30                ; convert to ascii
                 sta panelScore,X
+
                 dex
                 bpl _showscore
 
                 lda #TRUE               ; stop VBI for a moment
                 sta isFillOn
                 sta isHidePlayer
-
-                ;!!jsr SpritesClear        ; clear p/m area
 
                 lda #64                 ; initialize the star position
                 sta StarVertPos
@@ -580,6 +574,7 @@ Crash           .proc
                 sta DEDBRT
 _timrst         lda #5                  ; set death timer to 5 jiffies
                 sta TIMER
+
 _deadcc         lda DEDBRT              ; move brightness to death sound volume
                 sta SID1_CTRL1           ; volume=variable, distortion=0
 
@@ -592,6 +587,7 @@ _deadcc         lda DEDBRT              ; move brightness to death sound volume
                 ora DEDBRT              ; add brite
                 ;sta COLPF1             ; put in line color
                 ;sta COLPM3             ; and player color
+
                 lda TIMER               ; timer done yet?
                 bne _deadcc             ;   no, go change color.
 
@@ -623,7 +619,6 @@ _releas         lda CONSOL              ; key pressed, now
                 lda #FALSE
                 sta isGameOver
                 jsr RenderPanel
-
                 jmp START               ; and start game!
 
                 .endproc
@@ -636,12 +631,14 @@ _releas         lda CONSOL              ; key pressed, now
 RandomLocation  .proc
                 lda #TRUE               ; don't show player
                 sta isHidePlayer
+
 _newloc         .frsRandomByte          ; get random value for x
                 and #$FE                ; must be even and on screen
                 cmp #159
                 bcs _newloc
 
                 sta PLOTX
+
 _cshy           .frsRandomByte          ; get random value for y
                 and #$7E                ; must be even and on screen
                 cmp #85
@@ -656,8 +653,6 @@ _cshy           .frsRandomByte          ; get random value for y
                 cmp COLOR1,X            ; color 1?
                 bne _newloc             ;   no, try again.
 
-                ;!!jsr SpritesClear        ; it's ok, clear p/m
-
                 lda PLOTX               ; save the player's
                 sta PX                  ; new coordinates
                 lda PLOTY
@@ -665,9 +660,9 @@ _cshy           .frsRandomByte          ; get random value for y
 
                 lda #FALSE              ; redraw the
                 sta RDRCOL              ; player's track
+
                 lda hasDrawn            ; in color 0
                 beq _jctrk
-
                 jsr Redraw
 
                 lda INIX                ; this part is
@@ -711,6 +706,7 @@ Redraw          .proc
                 sta REX
                 lda INIY
                 sta REY
+
                 lda #0
                 sta X
 _redxlp         ldx X
@@ -718,10 +714,13 @@ _redxlp         ldx X
                 sta REDIR
                 lda LGTH,X
                 sta LGTHY
+
                 lda #1
                 sta Y
+
 _redylp         lda #3
                 sta TIMES
+
 _times3         lda REX
                 sta PLOTX
                 lda REY
@@ -743,6 +742,7 @@ _times3         lda REX
 
 _endrd          lda #FALSE
                 sta isDrawActive
+
                 rts
 
 _rdc1           lda BitsOff,X
@@ -765,13 +765,13 @@ _setnrp         dec TIMES
                 clc
                 adc YD,X
                 sta REY
+
                 jmp _times3
 
 _nxty           inc Y
                 lda Y
                 cmp LGTHY
                 beq _jnrd
-
                 bcs _nxtx
 
 _jnrd           jmp _redylp
@@ -780,7 +780,6 @@ _nxtx           inc X
                 lda X
                 cmp MoveIndex
                 beq _jrxlp
-
                 bcs _endrd
 
 _jrxlp          jmp _redxlp

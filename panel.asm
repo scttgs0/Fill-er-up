@@ -11,6 +11,7 @@ ConvertDecimal  .proc
                 ldx #4
                 lda #0
 _next1          sta DECIMAL,X
+
                 dex
                 bpl _next1
 
@@ -18,9 +19,7 @@ _next1          sta DECIMAL,X
 _ckmag          lda HIWK
                 cmp HIVALS,X
                 beq _1
-
                 bcs _subem
-
                 bcc _nosub
 
 _1              lda LOWK
@@ -29,7 +28,6 @@ _1              lda LOWK
 
 _nosub          dex
                 bpl _ckmag
-
                 jmp _showit
 
 _subem          lda LOWK
@@ -39,6 +37,7 @@ _subem          lda LOWK
                 lda HIWK
                 sbc HIVALS,X
                 sta HIWK
+
                 inc DECIMAL,X
                 jmp _ckmag
 
@@ -53,7 +52,6 @@ _next2          lda DECIMAL,X
                 iny
                 dex
                 bpl _next2
-
                 jsr RenderPanel
 
 _XIT            rts
@@ -145,5 +143,6 @@ _letter         sta CS_TEXT_MEM_PTR+v_renderLine,X
                 bra _nextChar
 
 _XIT            stz IOPAGE_CTRL
+
                 rts
                 .endproc
