@@ -1,7 +1,13 @@
 
+GameOver                .text "     GAME  OVER     "    ; double-wide text
 ScoreLine1              .text "TGT:      CUR:      "    ; double-wide text
 ScoreLine2              .text "LV:   SCORE:        "    ; double-wide text
-GameOver                .text "     GAME  OVER     "    ; double-wide text
+
+GameOverColor           .byte $00,$00,$00,$00,$00       ; separator
+                        .byte $E0,$E0,$E0,$E0           ; label
+                        .byte $00,$00                   ; separator
+                        .byte $E0,$E0,$E0,$E0           ; label
+                        .byte $00,$00,$00,$00,$00       ; separator
 
 ScoreLine1Color         .byte $10,$10,$10,$10           ; label
                         .byte $E0,$E0,$E0,$E0,$E0       ; value
@@ -17,7 +23,6 @@ ScoreLine2Color         .byte $10,$10,$10               ; label
                         .byte $50,$50,$50,$50,$50,$50   ; value
                         .byte $00                       ; separator
                         .byte $30                       ; value
-
 
 ;--------------------------------------
 ; LEVEL TABLES

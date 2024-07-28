@@ -69,16 +69,30 @@ v_renderLine    .var (CharResY-5)*CharResX
                 lda #iopPage3
                 sta IOPAGE_CTRL
 
+                lda isGameOver
+                bne _gameover
+
+                lda #$28                ; 2 lines = 40 characters
+                .byte $2C               ; BIT operation; consume the following LDA operation
+_gameover       lda #$14                ; 1 line = 20 characters
+                sta zpIndex1
+
 ;   reset color for two 40-char lines
                 ldx #$FF
                 ldy #$FF
 _nextColor      inx
                 iny
-                cpy #$28                ; 2 lines = 40 characters
+                cpy zpIndex1
                 beq _processText
 
-                lda ScoreLine1Color,Y
-                sta CS_COLOR_MEM_PTR+v_renderLine,X
+                lda isGameOver
+                beq _1
+
+                lda GameOverColor,Y
+                bra _2
+
+_1              lda ScoreLine1Color,Y
+_2              sta CS_COLOR_MEM_PTR+v_renderLine,X
                 inx
                 sta CS_COLOR_MEM_PTR+v_renderLine,X
                 bra _nextColor
@@ -93,7 +107,7 @@ _processText
                 ldy #$FF
 _nextChar       inx
                 iny
-                cpy #$28
+                cpy zpIndex1
                 beq _XIT
 
                 cpy #$14
