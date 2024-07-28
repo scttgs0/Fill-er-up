@@ -364,7 +364,10 @@ _index          .byte ?
 
 
 ;======================================
-;
+;--------------------------------------
+; TODO: refactor.  IDE was giving
+; unexpected results, so we had to
+; work around the quirks
 ;======================================
 BlitPoint       .proc
                 pha
