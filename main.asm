@@ -36,7 +36,7 @@ START           .proc
                 jsr SetFont
                 jsr ClearScreen
 
-                ;!!jsr InitSID             ; init sounds
+                ;!! jsr InitSID             ; init sounds
 
                 jsr ClearScreenRAM
                 jsr InitBitmap
@@ -63,8 +63,8 @@ _zeroScore      sta panelScore,X
                 sta isFillOn            ; else we'll wind up with nasty things happening!
                 sta isDead
                 sta isPreventColorChange
-                ;sta HITCLR             ; clear collisions
-                ;sta NMIEN              ; disable interrupts
+                ;!! sta HITCLR             ; clear collisions
+                ;!! sta NMIEN              ; disable interrupts
                 sta hasDrawn
 
                 ldx #5                  ; let's zero out the score counter...

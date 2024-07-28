@@ -97,6 +97,7 @@ _next2          sta (LO),Y
 ; this section draws the 4 lines that
 ; make the white border on the screen.
 ; - - - - - - - - - - - - - - - - - - -
+
                 lda #3
                 sta BORNUM
 
@@ -145,6 +146,7 @@ _drawln         jsr PlotCalc            ; alters X:= pixel offset
 ; - - - - - - - - - - - - - - - - - - -
 ; This section starts off each level
 ; - - - - - - - - - - - - - - - - - - -
+
                 lda #80                 ; position the player
                 sta PX
                 lda #84
@@ -503,6 +505,7 @@ _newlvl         lda LEVEL               ; if level < 15 then
 ; - - - - - - - - - - - - - - - - - - -
 ; Increase score
 ; - - - - - - - - - - - - - - - - - - -
+
 _nolinc         asl LOWK                ; score inc =
                 rol HIWK                ; tgt-cur * 2
 
@@ -679,12 +682,12 @@ _cshy           .frsRandomByte          ; get random value for y
                 lda #TRUE
                 sta isDirtyPlayfield
 
-_jctrk          ;lda #$24               ; restore draw line color
-                ;sta COLPF1
+_jctrk          ;!! lda #$24               ; restore draw line color
+                ;!! sta COLPF1
 
                 lda #FALSE
                 sta isPreventColorChange
-                ;sta HITCLR             ; clear collisions
+                ;!! sta HITCLR             ; clear collisions
                 sta isDead
 
                 jmp ClearTrackTbl       ; and go start new track.

@@ -173,11 +173,11 @@ _next1          sta SID1_BASE,X
                 stz SID1_SUREL3
                 stz SID2_SUREL1
 
-                ;lda #$21
-                ;sta SID1_CTRL1
-                ;sta SID1_CTRL2
-                ;sta SID1_CTRL3
-                ;sta SID2_CTRL1
+                ;!! lda #$21
+                ;!! sta SID1_CTRL1
+                ;!! sta SID1_CTRL2
+                ;!! sta SID1_CTRL3
+                ;!! sta SID2_CTRL1
 
                 lda #$08                ; Volume = 8 (mid-range)
                 sta SID1_SIGVOL
@@ -797,10 +797,10 @@ InitIRQs        .proc
                 stz IOPAGE_CTRL
 
 ;   enable IRQ handler
-                ;lda #<vecIRQ_BRK
-                ;sta IRQ_PRIOR
-                ;lda #>vecIRQ_BRK
-                ;sta IRQ_PRIOR+1
+                ;!! lda #<vecIRQ_BRK
+                ;!! sta IRQ_PRIOR
+                ;!! lda #>vecIRQ_BRK
+                ;!! sta IRQ_PRIOR+1
 
                 lda #<HandleIrq
                 sta vecIRQ_BRK
@@ -841,9 +841,9 @@ InitIRQs        .proc
                 sta INT_MASK_REG0
 
 ;   enable Keyboard IRQ
-                ; lda INT_MASK_REG1
-                ; and #~INT01_VIA1
-                ; sta INT_MASK_REG1
+                ;!! lda INT_MASK_REG1
+                ;!! and #~INT01_VIA1
+                ;!! sta INT_MASK_REG1
 
 ;   restore IOPAGE control
                 pla

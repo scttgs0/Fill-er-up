@@ -194,10 +194,10 @@ _nextPixel      stz zpTemp1             ; extract 2-bit pixel color
                 pha                     ; preserve
 
                 lda zpTemp1
-                ;lda nBlitLines  ; HACK:     color the line so we can analyze the render
-                ;and #15         ; HACK:
-                ;clc             ; HACK:
-                ;adc #15         ; HACK:
+                ;lda nBlitLines         ; DEBUG: color the lines so that we can analyze the render
+                ;and #15                ; DEBUG:
+                ;clc                    ; DEBUG:
+                ;adc #15                ; DEBUG:
 
                 ldy zpDSTidx
                 sta (zpPFDest),Y
@@ -354,9 +354,11 @@ _data_Dest2     .word Screen16K+320+$1E00
                 .word Screen16K+320
                 .word Screen16K+320+$1C00
 
-_data_count     .byte 12,14,13,13,24,9      ; # of lines to draw
+_data_count     .byte 12,14,13          ; # of lines to draw
+                .byte 13,24,9
 
-_data_MMUslot   .byte $10,$11,$12,$13,$15,$16
+_data_MMUslot   .byte $10,$11,$12
+                .byte $13,$15,$16
 
 _index          .byte ?
 
@@ -364,6 +366,7 @@ _index          .byte ?
 
 
 ;======================================
+;
 ;--------------------------------------
 ; TODO: refactor.  IDE was giving
 ; unexpected results, so we had to

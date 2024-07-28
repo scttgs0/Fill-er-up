@@ -14,14 +14,14 @@ HandleIrq       .proc
                 pha                     ; preserve
                 stz IOPAGE_CTRL
 
-                ; lda INT_PENDING_REG1
-                ; bit #INT01_VIA1
-                ; beq _1
+                ;!! lda INT_PENDING_REG1
+                ;!! bit #INT01_VIA1
+                ;!! beq _1
 
-                ; lda INT_PENDING_REG1
-                ; sta INT_PENDING_REG1
+                ;!! lda INT_PENDING_REG1
+                ;!! sta INT_PENDING_REG1
 
-                ; jsr KeyboardHandler
+                ;!! jsr KeyboardHandler
 
 _1              lda INT_PENDING_REG0
                 bit #INT00_SOF
@@ -40,7 +40,7 @@ _XIT            pla                     ; restore
                 pla
 
 HandleIrq_END   rti
-                ;jmp IRQ_PRIOR
+                ;!! jmp IRQ_PRIOR
 
                 .endproc
 
@@ -349,11 +349,11 @@ _1              lda isPaused            ; are we paused?
 _2              lda vBumpSndCount       ; more bump sound?
                 bmi _3                  ;   no, process timer
 
-                ;ora #$A0               ; mix volume with pure-tone
-                ;sta AUDC4
+                ;!! ora #$A0               ; mix volume with pure-tone
+                ;!! sta AUDC4
 
-                ;lda #$80               ; set up bump sound frequency
-                ;sta AUDF4
+                ;!! lda #$80               ; set up bump sound frequency
+                ;!! sta AUDF4
 
                 dec vBumpSndCount
 
@@ -370,21 +370,21 @@ _4              lda isFillOn            ; are we filling?
 _5              lda #0                  ; clear out dead flag
                 sta isDead
 
-                ;lda P0PL               ; has player 0 hit player 1?
-                ;and #$08
-                ;beq _6                 ;   no!
+                ;!! lda P0PL               ; has player 0 hit player 1?
+                ;!! and #$08
+                ;!! beq _6                 ;   no!
                 bra _6  ; HACK:
 
                 inc isDead              ;   yes!!!
 
-_6              ;lda P0PF               ; has player 0 hit color 2?
-                ;and #$02
-                ;beq _7                 ;   no!
+_6              ;!! lda P0PF               ; has player 0 hit color 2?
+                ;!! and #$02
+                ;!! beq _7                 ;   no!
                 bra _7 ; HACK:
 
                 inc isDead              ;   yes!!!
 
-_7              ;sta HITCLR             ; clear collisions
+_7              ;!! sta HITCLR             ; clear collisions
 
                 lda vMoveTimer          ; movement timer zero?
                 beq _8                  ;   yes, don't decrement.
