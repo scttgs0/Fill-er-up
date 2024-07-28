@@ -80,10 +80,10 @@ _next1          stx PLOTY               ; of the beginning of
                 jsr PlotCalc            ; each gr.7 line
 
                 ldx PLOTY               ; then zeroes out each of the
-
                 lda #$00                ; 40 bytes (0-39) in the line.
                 ldy #39
 _next2          sta (LO),Y
+
                 dey
                 bpl _next2
 
@@ -221,7 +221,7 @@ _wait1          lda isPaused            ; game paused?
                 stz isDirtyPlayfield
 
 _1              lda #$FD                ; do 'warble' sound
-                sta SID1_FREQ1           ; using sound
+                sta SID1_FREQ1          ; using sound
                 lda #$FE                ; channels 1-3
                 sta SID1_FREQ2
                 lda #$FF
@@ -329,7 +329,7 @@ _gotstk         lda #4                  ; reset the movement timer
 
                 pha                     ; and save it!
                 lda InputFlags          ; trigger pressed?
-                and #$10
+                and #joyButton0
                 bne _notdrawing         ;   no!
 
                 pla                     ; ok to draw?
@@ -414,8 +414,7 @@ _ccloop         jsr PlotCalc
                 ora COLOR2,X            ; in color 2.
                 sta (LO),Y
 
-                lda #TRUE
-                sta isDirtyPlayfield
+                jsr BlitPoint
 
                 dec BDCNT
                 beq _ckcolr

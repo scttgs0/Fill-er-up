@@ -360,94 +360,191 @@ _data_MMUslot   .byte $10,$11,$12,$13,$15,$16
 
 _index          .byte ?
 
-tblRowPTR       .word $0010,$1E00       ; 12 lines; bank $10
-                .word $0010,$2080
-                .word $0010,$2300
-                .word $0010,$2580
-                .word $0010,$2800
-                .word $0010,$2A80
-                .word $0010,$2D00
-                .word $0010,$2F80
-                .word $0010,$3200
-                .word $0010,$3480
-                .word $0010,$3700
-                .word $0010,$3980
+                .endproc
 
-                .word $0011,$1C00       ; 14 lines; bank $11
-                .word $0011,$1E80
-                .word $0011,$2100
-                .word $0011,$2380
-                .word $0011,$2600
-                .word $0011,$2880
-                .word $0011,$2B00
-                .word $0011,$2D80
-                .word $0011,$3000
-                .word $0011,$3280
-                .word $0011,$3500
-                .word $0011,$3780
-                .word $0011,$3A00
-                .word $0011,$3C80
 
-                .word $0012,$1F00       ; 13 lines; bank $12
-                .word $0012,$2180
-                .word $0012,$2400
-                .word $0012,$2680
-                .word $0012,$2900
-                .word $0012,$2B80
-                .word $0012,$2E00
-                .word $0012,$3080
-                .word $0012,$3300
-                .word $0012,$3580
-                .word $0012,$3800
-                .word $0012,$3A80
-                .word $0012,$3D00
+;======================================
+;
+;======================================
+BlitPoint       .proc
+                pha
+                phx
+                phy
 
-                .word $0013,$1F80       ; 13 lines; bank $13
-                .word $0013,$2200
-                .word $0013,$2480
-                .word $0013,$2700
-                .word $0013,$2980
-                .word $0013,$2C00
-                .word $0013,$2E80
-                .word $0013,$3100
-                .word $0013,$3380
-                .word $0013,$3600
-                .word $0013,$3880
-                .word $0013,$3B00
-                .word $0013,$3D80
+;   preserve IOPAGE control
+                lda IOPAGE_CTRL
+                pha
 
-                .word $0015,$0000       ; 24 lines; bank $15
-                .word $0015,$0280
-                .word $0015,$0500
-                .word $0015,$0780
-                .word $0015,$0A00
-                .word $0015,$0C80
-                .word $0015,$0F00
-                .word $0015,$1180
-                .word $0015,$1400
-                .word $0015,$1680
-                .word $0015,$1900
-                .word $0015,$1B80
-                .word $0015,$1E00
-                .word $0015,$2080
-                .word $0015,$2300
-                .word $0015,$2580
-                .word $0015,$2800
-                .word $0015,$2A80
-                .word $0015,$2D00
-                .word $0015,$2F80
-                .word $0015,$3200
-                .word $0015,$3480
-                .word $0015,$3700
-                .word $0015,$3980
+;   switch to system map
+                stz IOPAGE_CTRL
 
-                .word $0016,$1C00       ; 9 lines; bank $16
-                .word $0016,$1E80
-                .word $0016,$2100
-                .word $0016,$2380
-                .word $0016,$2600
-                .word $0016,$2880
-                .word $0016,$2B00
-                .word $0016,$2D80
-                .word $0016,$3000
+;   ensure edit mode
+                lda MMU_CTRL
+                pha                     ; preserve
+                ora #mmuEditMode
+                sta MMU_CTRL
+
+                lda #<_tblRowPTR
+                sta zpPFSource
+                lda #>_tblRowPTR
+                sta zpPFSource+1
+
+                lda PLOTY               ; *4 (convert to DWORD index)
+                stz zpTemp1
+                asl
+                rol zpTemp1
+                asl
+                rol zpTemp1
+                tax
+
+                clc
+                lda zpPFSource+1
+                adc zpTemp1
+                sta zpPFSource+1
+
+                clc
+                txa
+                adc zpPFSource
+                sta zpPFSource
+                bcc _1
+
+                inc zpPFSource+1
+
+;   set the MMU
+_1              lda (zpPFSource)
+                sta MMU_Block3
+                inc A
+                sta MMU_Block4
+
+                ldy #$02
+                lda (zpPFSource),Y
+                sta zpPFDest
+                iny
+                lda (zpPFSource),Y
+                sta zpPFDest+1
+
+                lda PLOTX
+                stz zpTemp1
+                asl
+                rol zpTemp1
+
+                clc
+                adc zpPFDest
+                sta zpPFDest
+
+                lda zpPFDest+1
+                adc zpTemp1
+                sta zpPFDest+1
+
+                lda #$02
+                sta (zpPFDest)
+
+;   restore MMU control
+                pla
+                sta MMU_CTRL
+
+;   restore IOPAGE control
+                pla
+                sta IOPAGE_CTRL
+
+                ply
+                plx
+                pla
+                rts
+
+;--------------------------------------
+
+_tblRowPTR      .word $0010,Screen16K+$1E00     ; 12 lines; bank $10
+                .word $0010,Screen16K+$2080
+                .word $0010,Screen16K+$2300
+                .word $0010,Screen16K+$2580
+                .word $0010,Screen16K+$2800
+                .word $0010,Screen16K+$2A80
+                .word $0010,Screen16K+$2D00
+                .word $0010,Screen16K+$2F80
+                .word $0010,Screen16K+$3200
+                .word $0010,Screen16K+$3480
+                .word $0010,Screen16K+$3700
+                .word $0010,Screen16K+$3980
+
+                .word $0011,Screen16K+$1C00     ; 14 lines; bank $11
+                .word $0011,Screen16K+$1E80
+                .word $0011,Screen16K+$2100
+                .word $0011,Screen16K+$2380
+                .word $0011,Screen16K+$2600
+                .word $0011,Screen16K+$2880
+                .word $0011,Screen16K+$2B00
+                .word $0011,Screen16K+$2D80
+                .word $0011,Screen16K+$3000
+                .word $0011,Screen16K+$3280
+                .word $0011,Screen16K+$3500
+                .word $0011,Screen16K+$3780
+                .word $0011,Screen16K+$3A00
+                .word $0011,Screen16K+$3C80
+
+                .word $0012,Screen16K+$1F00     ; 13 lines; bank $12
+                .word $0012,Screen16K+$2180
+                .word $0012,Screen16K+$2400
+                .word $0012,Screen16K+$2680
+                .word $0012,Screen16K+$2900
+                .word $0012,Screen16K+$2B80
+                .word $0012,Screen16K+$2E00
+                .word $0012,Screen16K+$3080
+                .word $0012,Screen16K+$3300
+                .word $0012,Screen16K+$3580
+                .word $0012,Screen16K+$3800
+                .word $0012,Screen16K+$3A80
+                .word $0012,Screen16K+$3D00
+
+                .word $0013,Screen16K+$1F80     ; 13 lines; bank $13
+                .word $0013,Screen16K+$2200
+                .word $0013,Screen16K+$2480
+                .word $0013,Screen16K+$2700
+                .word $0013,Screen16K+$2980
+                .word $0013,Screen16K+$2C00
+                .word $0013,Screen16K+$2E80
+                .word $0013,Screen16K+$3100
+                .word $0013,Screen16K+$3380
+                .word $0013,Screen16K+$3600
+                .word $0013,Screen16K+$3880
+                .word $0013,Screen16K+$3B00
+                .word $0013,Screen16K+$3D80
+
+                .word $0015,Screen16K+$0000     ; 24 lines; bank $15
+                .word $0015,Screen16K+$0280
+                .word $0015,Screen16K+$0500
+                .word $0015,Screen16K+$0780
+                .word $0015,Screen16K+$0A00
+                .word $0015,Screen16K+$0C80
+                .word $0015,Screen16K+$0F00
+                .word $0015,Screen16K+$1180
+                .word $0015,Screen16K+$1400
+                .word $0015,Screen16K+$1680
+                .word $0015,Screen16K+$1900
+                .word $0015,Screen16K+$1B80
+                .word $0015,Screen16K+$1E00
+                .word $0015,Screen16K+$2080
+                .word $0015,Screen16K+$2300
+                .word $0015,Screen16K+$2580
+                .word $0015,Screen16K+$2800
+                .word $0015,Screen16K+$2A80
+                .word $0015,Screen16K+$2D00
+                .word $0015,Screen16K+$2F80
+                .word $0015,Screen16K+$3200
+                .word $0015,Screen16K+$3480
+                .word $0015,Screen16K+$3700
+                .word $0015,Screen16K+$3980
+
+                .word $0016,Screen16K+$1C00     ; 9 lines; bank $16
+                .word $0016,Screen16K+$1E80
+                .word $0016,Screen16K+$2100
+                .word $0016,Screen16K+$2380
+                .word $0016,Screen16K+$2600
+                .word $0016,Screen16K+$2880
+                .word $0016,Screen16K+$2B00
+                .word $0016,Screen16K+$2D80
+                .word $0016,Screen16K+$3000
+
+                .word $0016,Screen16K+$3280     ; bottom border
+
                 .endproc

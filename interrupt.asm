@@ -153,11 +153,11 @@ _4              pla
                 bne _5
 
                 lda InputFlags
-                bit #$01
+                bit #joyUP
                 beq _4a
 
-                eor #$01
-                ora #$02                ; cancel KEY_DOWN
+                eor #joyUP
+                ora #joyDOWN            ; cancel KEY_DOWN
                 sta InputFlags
 
 _4a             lda #itKeyboard
@@ -171,7 +171,7 @@ _4r             pla
                 bne _5r
 
                 lda InputFlags
-                ora #$01
+                ora #joyUP
                 sta InputFlags
 
                 jmp _CleanUpXIT
@@ -182,11 +182,11 @@ _5              pla
                 bne _6
 
                 lda InputFlags
-                bit #$02
+                bit #joyDOWN
                 beq _5a
 
-                eor #$02
-                ora #$01                ; cancel KEY_UP
+                eor #joyDOWN
+                ora #joyUP              ; cancel KEY_UP
                 sta InputFlags
 
 _5a             lda #itKeyboard
@@ -200,7 +200,7 @@ _5r             pla
                 bne _6r
 
                 lda InputFlags
-                ora #$02
+                ora #joyDOWN
                 sta InputFlags
 
                 jmp _CleanUpXIT
@@ -211,11 +211,11 @@ _6              pla
                 bne _7
 
                 lda InputFlags
-                bit #$04
+                bit #joyLEFT
                 beq _6a
 
-                eor #$04
-                ora #$08                ; cancel KEY_RIGHT
+                eor #joyLEFT
+                ora #joyRIGHT           ; cancel KEY_RIGHT
                 sta InputFlags
 
 _6a             lda #itKeyboard
@@ -229,7 +229,7 @@ _6r             pla
                 bne _7r
 
                 lda InputFlags
-                ora #$04
+                ora #joyLEFT
                 sta InputFlags
 
                 bra _CleanUpXIT
@@ -240,11 +240,11 @@ _7              pla
                 bne _8
 
                 lda InputFlags
-                bit #$08
+                bit #joyRIGHT
                 beq _7a
 
-                eor #$08
-                ora #$04                ; cancel KEY_LEFT
+                eor #joyRIGHT
+                ora #joyLEFT            ; cancel KEY_LEFT
                 sta InputFlags
 
 _7a             lda #itKeyboard
@@ -258,7 +258,7 @@ _7r             pla
                 bne _8r
 
                 lda InputFlags
-                ora #$08
+                ora #joyRIGHT
                 sta InputFlags
 
                 bra _CleanUpXIT
@@ -268,7 +268,7 @@ _8              pla
                 bne _XIT
 
                 lda InputFlags
-                eor #$10
+                eor #joyButton0
                 sta InputFlags
 
                 lda #itKeyboard
@@ -282,7 +282,7 @@ _8r             pla
                 bne _XIT
 
                 lda InputFlags
-                ora #$10
+                ora #joyButton0
                 sta InputFlags
 
                 stz KEYCHAR
