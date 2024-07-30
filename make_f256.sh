@@ -17,7 +17,7 @@ mkdir -p obj/
         --flat \
         --nostart \
         -D PGX=0 \
-        -o obj/fillerupB.bin \
+        -o obj/fillerup.bin \
         --list=obj/fillerupB.lst \
         --labels=obj/fillerupB.lbl \
         fill-er-up.asm
