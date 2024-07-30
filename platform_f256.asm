@@ -173,13 +173,13 @@ _next1          sta SID1_BASE,X
                 stz SID1_SUREL3
                 stz SID2_SUREL1
 
-                ;!! lda #$21
-                ;!! sta SID1_CTRL1
-                ;!! sta SID1_CTRL2
-                ;!! sta SID1_CTRL3
-                ;!! sta SID2_CTRL1
+                lda #$21
+                sta SID1_CTRL1
+                sta SID1_CTRL2
+                sta SID1_CTRL3
+                sta SID2_CTRL1
 
-                lda #$08                ; Volume = 8 (mid-range)
+                lda #$0C                ; Volume = 12 (high-range)
                 sta SID1_SIGVOL
                 sta SID2_SIGVOL
 

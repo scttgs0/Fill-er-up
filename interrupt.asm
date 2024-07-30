@@ -343,17 +343,16 @@ _pause          lda KEYCHAR
 
 _1              lda isPaused            ; are we paused?
                 beq _2                  ;   no!
-
                 jmp _XIT                ; when paused, no VBI!
 
 _2              lda vBumpSndCount       ; more bump sound?
                 bmi _3                  ;   no, process timer
 
-                ;!! ora #$A0               ; mix volume with pure-tone
-                ;!! sta AUDC4
+                ora #$A0                ; mix volume with pure-tone
+                sta SID2_CTRL1
 
-                ;!! lda #$80               ; set up bump sound frequency
-                ;!! sta AUDF4
+                lda #$80                ; set up bump sound frequency
+                sta SID2_FREQ1
 
                 dec vBumpSndCount
 
@@ -364,7 +363,6 @@ _3              lda TIMER               ; timer down to zero?
 
 _4              lda isFillOn            ; are we filling?
                 beq _5                  ;   no, do rest of VBI
-
                 jmp _XIT                ; when filling, exit VBI
 
 _5              lda #0                  ; clear out dead flag

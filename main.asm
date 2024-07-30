@@ -36,7 +36,7 @@ START           .proc
                 jsr SetFont
                 jsr ClearScreen
 
-                ;!! jsr InitSID             ; init sounds
+                jsr InitSID             ; init sounds
 
                 jsr ClearScreenRAM
                 jsr InitBitmap
