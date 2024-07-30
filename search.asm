@@ -17,13 +17,13 @@ Search          .proc
                 sta D
 
                 lda StarHorzPos
-                sec
-                sbc #44
+                ;!!sec
+                ;!!sbc #44
                 sta SX
 
                 lda StarVertPos
-                sec
-                sbc #13
+                ;!!sec
+                ;!!sbc #13
                 sta SY
 
 _findcl         ldx D

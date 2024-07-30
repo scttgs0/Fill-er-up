@@ -14,17 +14,17 @@ _movestar       lda StarSpeed           ; set movement timer
                 sta vStarMoveTimer      ; with star speed
 
                 lda StarVertPos         ; adjust P/M coordinates to match
-                sec                     ; playfield plotting coordinates.
-                sbc #13                 ; TODO:
+                ;!!sec                     ; playfield plotting coordinates.
+                ;!!sbc #13
                 sta StarLiteralY
 
                 lda StarHorzPos
-                sec
-                sbc #44                 ; TODO:
+                ;!!sec
+                ;!!sbc #44
                 sta StarLiteralX
 
                 .frsRandomByte          ; want to change the star's direction?
-                cmp #240
+                cmp #240                ; 94%
                 bcc _samedir            ;   no, use same
 
 _newdir         .frsRandomByte          ; get random direction
@@ -45,7 +45,6 @@ _dirchk         tax                     ; check to see if star will
                 clc
                 adc StarDeltaY,X
                 sta PLOTY
-
                 jsr PlotCalc
 
                 ldy #0
@@ -55,11 +54,11 @@ _dirchk         tax                     ; check to see if star will
 
                 lda #15                 ; hit something,
                 sta vBumpSndCount       ; start bump sound and
-                bne _newdir             ; get new direction
+                bne _newdir             ; [unc] get new direction
 
 _wayclear       lda PLOTX               ; adjust star coordinates back to
-                clc                     ; p/m coordinates from playfield
-                adc #44                 ; TODO:
+                ;!!clc                     ; p/m coordinates from playfield
+                ;!!adc #44                 ; TODO:
                 sta StarHorzPos
 
 ;   enforce limits
@@ -70,8 +69,8 @@ _wayclear       lda PLOTX               ; adjust star coordinates back to
                 sta StarHorzPos
 
 _1              lda PLOTY
-                clc
-                adc #13                 ; TODO:
+                ;!!clc
+                ;!!adc #13                 ; TODO:
                 sta StarVertPos
 
 ;   enforce limits

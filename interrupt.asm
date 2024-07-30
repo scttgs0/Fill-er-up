@@ -396,13 +396,13 @@ _8              lda vStarMoveTimer      ; star move timer zero?
 
                 dec vStarMoveTimer
 
-_9              lda vStarRotTimer       ; star rot. timer zero?
-                beq _10                 ;   yes, rotate star!
+_9              lda vStarRotTimer       ; star rotation timer zero?
+                beq _rotate             ;   yes, rotate star!
 
                 dec vStarRotTimer       ; decrement timer
                 jmp _12                 ; and skip rotation.
 
-_10             lda #1                  ; set rot. timer to 1
+_rotate         lda #1                  ; set rot. timer to 1
                 sta vStarRotTimer
 
                 lda StarRotPos          ; increment star rotation counter
@@ -415,45 +415,59 @@ _10             lda #1                  ; set rot. timer to 1
                 lda #0                  ; zero rot. counter.
 _11             sta StarRotPos          ; save rot. pos.
 
+; - - - - - - - - - - - - - - - - - - -
+;   this section draws the star
+; - - - - - - - - - - - - - - - - - - -
 
-;   this section draws the star.
-
+;   star X
 _12             stz zpTemp1
                 stz zpTemp2
+
                 lda StarHorzPos         ; set star's horiz. pos.
                 asl                     ; *2, account for double-pixel display
                 rol zpTemp1
                 clc                     ; +32, account for off-screen border
                 adc #32-6               ; -6, distance to star center
                 rol zpTemp2
-                sta SPR(sprite_t.X, 1)
+                sta SPR(sprite_t.X, IDX_STAR)
+
                 clc
                 lda zpTemp1
                 adc zpTemp2
-                sta SPR(sprite_t.X+1,1)
+                sta SPR(sprite_t.X+1, IDX_STAR)
 
+;   star Y
                 stz zpTemp1
                 stz zpTemp2
+
                 lda StarVertPos         ; set star's vert. pos.
                 asl                     ; *2, account for double-pixel display
                 rol zpTemp1
                 clc                     ; +32, account for off-screen border
                 adc #32+24-6            ; +24, account for playfield vertical displacement
-                rol zpTemp2
-                sta SPR(sprite_t.Y, 1)  ; -6, distance to star center
+                rol zpTemp2             ; -6, distance to star center
+                sta SPR(sprite_t.Y, IDX_STAR)
+
                 clc
                 lda zpTemp1
                 adc zpTemp2
-                sta SPR(sprite_t.Y+1,1)
+                sta SPR(sprite_t.Y+1, IDX_STAR)
 
+;   star rotation
                 lda StarRotPos
                 asl                     ; *2, word lookup table
                 tay
-                lda StarRotTbl,Y
-                sta SPR(sprite_t.ADDR, 1)
-                lda StarRotTbl+1,Y
-                sta SPR(sprite_t.ADDR+1, 1)
 
+                lda StarRotTbl,Y
+                sta SPR(sprite_t.ADDR, IDX_STAR)
+                lda StarRotTbl+1,Y
+                sta SPR(sprite_t.ADDR+1, IDX_STAR)
+
+; - - - - - - - - - - - - - - - - - - -
+;   this section draws the player
+; - - - - - - - - - - - - - - - - - - -
+
+;   color cycle timer
                 lda zpPlayerColorClock  ; is it time to change color?
                 cmp JIFFYCLOCK
                 bne _13                 ;   no, skip
@@ -466,27 +480,31 @@ _12             stz zpTemp1
 _13             lda isHidePlayer        ; ok to show player?
                 bne _XIT                ;   no, exit VBI
 
+;   player X
                 stz zpTemp1
                 stz zpTemp2
+
                 lda PX                  ; set player's horizontal position
                 asl                     ; *2, account for double-pixel display
                 rol zpTemp1
                 clc                     ; +32, account for off-screen border
                 adc #32-2               ; -2, distance to player center
                 rol zpTemp2
-                sta SPR(sprite_t.X, 0)
+                sta SPR(sprite_t.X, IDX_PLYR)
 
                 clc
                 lda zpTemp1
                 adc zpTemp2
-                sta SPR(sprite_t.X+1, 0)
+                sta SPR(sprite_t.X+1, IDX_PLYR)
 
+;   player Y
                 lda PY                  ; set player's vertical position
                 asl                     ; *2, account for double-pixel display
                 clc                     ; +32, account for off-screen border
-                adc #32+24-2            ; +24, account for playfield vertical displacement
-                sta SPR(sprite_t.Y, 0)  ; -2, distance to player center
+                adc #32+24-2            ; +24, account for playfield vertical displacement; -2, distance to player center
+                sta SPR(sprite_t.Y, IDX_PLYR)
 
+;   color cycle
                 lda isPreventColorChange ; color change ok?
                 bne _XIT                ;   no, exit VBI
 
@@ -500,9 +518,11 @@ _14             lda zpPlayerColorIdx
                 asl                     ; *4
                 asl
                 tax
+
                 ldy #0
 _nextColor      lda palColor0,X
                 sta SprColor0,Y
+
                 inx
                 iny
                 cpy #4
