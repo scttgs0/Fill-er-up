@@ -196,6 +196,7 @@ _drawln         jsr PlotCalc            ; alters X:= pixel offset
 ClearTrackTbl   .proc
                 lda #FALSE
                 sta isHidePlayer
+
                 tax
 _next1          sta DIR,X               ; clear direction
                 sta LGTH,X              ; and length entries
@@ -302,6 +303,7 @@ _gotstk         lda #4                  ; reset the movement timer
                 clc                     ; and hold it...
                 adc YI
                 sta CKY
+
                 cmp #85                 ; offscreen?
                 bcs _jGetStick          ;   yes! ignore
 
@@ -400,7 +402,9 @@ _nocrash        ldx MoveIndex           ; update the tracking tables
 
                 lda #0
                 sta LGTH,X
+
 _samdir         inc LGTH,X
+
                 lda #3
                 sta BDCNT
 
@@ -493,6 +497,7 @@ _endlin         lda #FALSE              ; we aren't
                 lda CurrentHI
                 sbc TargetHI,X
                 sta HIWK                ; hit target?
+
                 bpl _newlvl             ;   yes--new level!
                 jmp ClearTrackTbl       ;   no, go clear track
 
@@ -574,6 +579,7 @@ Crash           .proc
 
                 lda #15                 ; set brightness of player death
                 sta DEDBRT
+
 _timrst         lda #5                  ; set death timer to 5 jiffies
                 sta TIMER
 
@@ -587,8 +593,8 @@ _deadcc         lda DEDBRT              ; move brightness to death sound volume
                 .frsRandomByte
                 and #$F0                ; death color
                 ora DEDBRT              ; add brite
-                ;sta COLPF1             ; put in line color
-                ;sta COLPM3             ; and player color
+                ;!!sta COLPF1             ; put in line color
+                ;!!sta COLPM3             ; and player color
 
                 lda TIMER               ; timer done yet?
                 bne _deadcc             ;   no, go change color.
@@ -711,6 +717,7 @@ Redraw          .proc
 
                 lda #0
                 sta X
+
 _redxlp         ldx X
                 lda DIR,X
                 sta REDIR
