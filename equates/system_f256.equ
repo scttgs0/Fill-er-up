@@ -208,13 +208,13 @@ TILE1_SIZE_Y            = $D212
 TILE1_SCROLL_X          = $D214
 TILE1_SCROLL_Y          = $D216
 
+TILE2_CTRL              = $D218
 TILE2_ADDR              = $D219
 TILE2_SIZE_X            = $D21C
 TILE2_SIZE_Y            = $D21E
 TILE2_SCROLL_X          = $D220
 TILE2_SCROLL_Y          = $D222
 
-TILE2_CTRL              = $D218
 TILESET0_ADDR           = $D280         ; [long] Bits[18:0]
 TILESET0_CTRL           = $D283
 tsVertical          = $00

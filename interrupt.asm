@@ -1,4 +1,9 @@
 
+; SPDX-FileName: interrupt.asm
+; SPDX-FileCopyrightText: Copyright 2024, Scott Giese
+; SPDX-License-Identifier: GPL-3.0-or-later
+
+
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Main IRQ Handler
@@ -46,7 +51,7 @@ HandleIrq_END   rti
 
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Handle Key notifications
+; Key Notifications
 ;--------------------------------------
 ;   ESC         $01/$81  press/release
 ;   R-Ctrl      $1D/$9D
@@ -299,7 +304,7 @@ _XIT            ply
 
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Handle Vertical Blank Interrupt (SOF)
+; Vertical Blank Interrupt (SOF)
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 VbiHandler      .proc
 KEY_SPACE       = $39
