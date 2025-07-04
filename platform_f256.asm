@@ -792,9 +792,9 @@ InitIRQs        .proc
                 ;!! lda #>vecIRQ_BRK
                 ;!! sta IRQ_PRIOR+1
 
-                lda #<irqMain
+                lda #<HandleIrq
                 sta vecIRQ_BRK
-                lda #>irqMain
+                lda #>HandleIrq
                 sta vecIRQ_BRK+1
 
 ;   initialize the console

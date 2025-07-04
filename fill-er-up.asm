@@ -34,20 +34,27 @@
                 .byte $03
                 .dword BOOT
 ;--------------------------------------
-.else
-                .byte $F2,$56           ; signature
-                .byte $02               ; slot count
-                .byte $01               ; first slot
-                .addr BOOT              ; execute address
-                .word $0001             ; version
-                .word $0000             ; kernel
-                .null 'Fill-er Up'      ; binary name
+; .elsif PGZ=1
+;                 .text "PGZ"
+;                 .byte $03
+;                 .dword BOOT
+;--------------------------------------
+; .else
+;                 .byte $F2,$56           ; signature
+;                 .byte $02               ; slot count
+;                 .byte $01               ; first slot
+;                 .addr BOOT              ; execute address
+;                 .word $0001             ; version
+;                 .word $0000             ; kernel
+;                 .null 'Fill-er Up'      ; binary name
 .endif
 
 ;--------------------------------------
 
 BOOT            ldx #$FF                ; initialize the stack
                 txs
+
+                stz IOPAGE_CTRL
 
                 jmp START
 
