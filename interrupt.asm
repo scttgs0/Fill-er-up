@@ -9,10 +9,12 @@
 ; Main IRQ Handler
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-HandleIrq       .proc
+irqMain         .proc
                 pha
                 phx
                 phy
+
+                cld
 
 ;   switch to system map
                 lda IOPAGE_CTRL
@@ -35,7 +37,7 @@ _1              lda INT_PENDING_REG0
                 lda INT_PENDING_REG0
                 sta INT_PENDING_REG0
 
-                jsr VbiHandler
+                jsr irqVBIHandler
 
 _XIT            pla                     ; restore
                 sta IOPAGE_CTRL
@@ -44,9 +46,8 @@ _XIT            pla                     ; restore
                 plx
                 pla
 
-HandleIrq_END   rti
-                ;!! jmp IRQ_PRIOR
-
+irqMain_END     ;jmp IRQ_PRIOR
+                rti
                 .endproc
 
 
@@ -306,7 +307,7 @@ _XIT            ply
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Vertical Blank Interrupt (SOF)
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-VbiHandler      .proc
+irqVBIHandler   .proc
 KEY_SPACE       = $39
 ;---
 
