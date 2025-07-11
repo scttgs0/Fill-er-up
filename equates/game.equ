@@ -17,5 +17,6 @@ Screen16K               = $6000         ; 2 slots [$6000:$9FFF]
 CharResX                = 40
 CharResY                = 30
 
-TRUE                    = 1
 FALSE                   = 0
+TRUE                    = 1
+

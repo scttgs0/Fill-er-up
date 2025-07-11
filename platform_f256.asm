@@ -450,7 +450,7 @@ InitTiles       .proc
                 lda #`worldmap
                 sta TILE0_ADDR+2
 
-                lda #40                 ; Set the size of the tile map to 40x30
+                lda #40                 ; Set the size of the tile map
                 sta TILE0_SIZE_X
                 stz TILE0_SIZE_X+1
                 lda #30
@@ -462,7 +462,7 @@ InitTiles       .proc
                 stz TILE0_SCROLL_Y+1
                 stz TILE0_SCROLL_Y
 
-;   enable the tilemap, use 8x8 pixel tiles
+;   enable the tilemap, use 8x8-pixel tiles
                 lda #tcEnable|tcSmallTiles
                 sta TILE0_CTRL
 
